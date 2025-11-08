@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💩 Pigeon Plop: Mobile Chaos!</title>
+    <title>🐍 Snakes & Boosters Race</title>
     
     <style>
         /* BASE & TYPOGRAPHY */
         body {
-            font-family: 'Arial Black', Gadget, sans-serif;
-            background-color: #e0f7fa; /* Light Cyan */
-            color: #1a237e; /* Deep Blue Text */
+            font-family: 'Arial', sans-serif;
+            background-color: #fce4ec; /* Light Pink Background */
+            color: #311b92; /* Deep Purple Text */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -19,8 +19,8 @@
         }
 
         header h1 {
-            color: #ff6e40; /* Deep Orange */
-            text-shadow: 3px 3px #ffe0b2; /* Light Orange shadow */
+            color: #d81b60; /* Pinkish Red */
+            text-shadow: 2px 2px #f8bbd0;
             font-size: 1.8em;
             margin-bottom: 10px;
         }
@@ -28,125 +28,109 @@
         /* LAYOUT (MOBILE FIRST) */
         #game-container {
             width: 100%;
-            max-width: 500px; /* Max size for good mobile fit */
+            max-width: 500px;
             display: flex;
             flex-direction: column;
             gap: 15px;
             background: white;
             padding: 15px;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
 
-        /* GAME BOARD (5x5 Grid) */
+        /* GAME BOARD (10x10 Grid) */
         #game-board {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            grid-template-rows: repeat(5, 1fr);
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
             width: 100%;
             aspect-ratio: 1 / 1;
-            border: 4px solid #4caf50; /* Green Border */
-            background-color: #c8e6c9; /* Light Green Grass */
+            border: 4px solid #4a148c; /* Purple Border */
+            background-color: #f3e5f5; /* Very Light Purple */
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
         }
 
         .square {
-            border: 1px solid #81c784;
+            border: 1px solid #ce93d8;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.8em; /* Slightly smaller for mobile */
+            font-size: 0.8em;
             position: relative;
-            cursor: pointer;
-            transition: background-color 0.1s;
-        }
-        .square:active { background-color: #a5d6a7; } /* Feedback on touch */
-
-        /* Board Features */
-        .statue { background-color: #90a4ae; color: #37474f; } /* Statue (Goal) */
-        .fountain { background-color: #4fc3f7; } /* Fountain (Hazard) */
-        .hotdog { background-color: #ffb74d; } /* Hot Dog Stand (Lure target) */
-
-        /* Pieces */
-        .pigeon {
-            position: absolute;
-            font-size: 1.5em;
             font-weight: bold;
-            z-index: 10;
-            text-shadow: 1px 1px 0 white;
-            transition: transform 0.3s;
         }
-        .pigeon-red { color: #f44336; }
-        .pigeon-blue { color: #2196f3; }
 
-        /* STATUS & HAND */
-        #player-status, #action-area {
-            background-color: #e3f2fd; /* Very Light Blue */
+        /* Special Squares Styling */
+        .booster { background-color: #a5d6a7; color: green; } /* Green Arrow */
+        .hazard { background-color: #ef9a9a; color: red; } /* Red Skull */
+        .skip { background-color: #fff59d; color: orange; } /* Yellow Stop */
+        .double { background-color: #90caf9; color: blue; } /* Blue Dice */
+        .finish { background-color: #81c784; color: white; font-size: 1.2em;}
+
+        /* Player Tokens */
+        .token {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            border-radius: 50%;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            color: white;
+            font-weight: bold;
+            transition: all 0.5s ease-in-out; /* Smooth movement */
+        }
+        .token-red { background-color: #e53935; top: 0; left: 0; }
+        .token-blue { background-color: #1e88e5; bottom: 0; right: 0; }
+
+        /* Status & Hand */
+        #player-status {
+            background-color: #f3e5f5;
             padding: 10px;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        #hand-display {
-            margin-top: 10px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 cards per row */
-            gap: 8px;
-        }
-
-        .card-button {
-            padding: 10px 8px;
-            border: 3px solid #673ab7; /* Deep Purple Border */
-            background-color: #ede7f6; /* Lighter Purple */
-            color: #4527a0;
-            border-radius: 8px;
-            font-size: 0.9em;
-            font-weight: bold;
             text-align: center;
-            cursor: pointer;
-            pointer-events: none;
-            opacity: 0.5;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-        .card-button.active {
-            opacity: 1;
-            background-color: #b39ddb;
-            pointer-events: auto;
-            transform: scale(1.05);
-        }
-        .card-button:active.active { background-color: #9575cd; }
-        
+
         /* DICE & ACTIONS */
         #dice-display {
             font-size: 40px;
             font-weight: bold;
-            border: 4px solid #ff9800; /* Amber */
+            border: 4px solid #ff4081; /* Pink Accent */
             width: 60px;
             height: 60px;
             line-height: 60px;
             margin: 10px auto;
             border-radius: 8px;
             background-color: white;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
         #roll-button {
             width: 100%;
             padding: 15px 10px;
             font-size: 1.1em;
             cursor: pointer;
-            background-color: #ff5722;
+            background-color: #ff4081;
             color: white;
             border: none;
             border-radius: 10px;
-            box-shadow: 0 4px 0 #e64a19; /* 3D effect */
+            box-shadow: 0 4px 0 #c51162; 
             transition: all 0.1s;
         }
         #roll-button:active {
-            box-shadow: 0 2px 0 #e64a19;
+            box-shadow: 0 2px 0 #c51162;
             transform: translateY(2px);
         }
         
+        /* MESSAGE AREA */
+        #game-message {
+            font-weight: bold;
+            min-height: 20px;
+            margin-top: 5px;
+        }
+
         /* MULTIPLAYER/STORAGE */
         #online-area {
             display: flex;
@@ -154,7 +138,7 @@
             gap: 10px;
             text-align: center;
             padding: 10px 0;
-            border-top: 2px dashed #90caf9;
+            border-top: 2px dashed #e91e63;
         }
         #room-code-display {
             font-size: 1.3em;
@@ -172,9 +156,9 @@
             width: 100%;
         }
 
-        /* --- INSTRUCTION MODAL --- */
+        /* INSTRUCTION MODAL */
         .modal {
-            display: none; /* Hidden by default */
+            display: none; 
             position: fixed;
             z-index: 100;
             left: 0;
@@ -182,17 +166,16 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+            background-color: rgba(0,0,0,0.7);
         }
         .modal-content {
             background-color: #fff;
-            margin: 10% auto; /* Centered, mobile friendly */
+            margin: 10% auto;
             padding: 20px;
-            border: 3px solid #4caf50;
+            border: 3px solid #ff4081;
             width: 90%;
             max-width: 400px;
             border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
         }
         .close-btn {
             color: #aaa;
@@ -205,73 +188,39 @@
             text-decoration: none;
             cursor: pointer;
         }
-        .rule-list li { margin-bottom: 5px; }
-
     </style>
 </head>
 <body>
 
     <header>
-        <h1>💩 Pigeon Plop!</h1>
+        <h1>🐍 Snakes & Boosters ⬆️⬇️</h1>
     </header>
 
     <div id="game-container">
         
-        <div id="game-board">
-            <div class="square" data-coord="A1"></div>
-            <div class="square" data-coord="A2"></div>
-            <div class="square statue" data-coord="A3">🏛️</div>
-            <div class="square" data-coord="A4"></div>
-            <div class="square" data-coord="A5"></div>
-
-            <div class="square" data-coord="B1"></div>
-            <div class="square hotdog" data-coord="B2">🌭</div>
-            <div class="square" data-coord="B3"></div>
-            <div class="square" data-coord="B4"></div>
-            <div class="square" data-coord="B5"></div>
-            
-            <div class="square fountain" data-coord="C1">⛲</div>
-            <div class="square" data-coord="C2"></div>
-            <div class="square statue" data-coord="C3">🏛️</div>
-            <div class="square" data-coord="C4"></div>
-            <div class="square fountain" data-coord="C5">⛲</div>
-            
-            <div class="square" data-coord="D1"></div>
-            <div class="square" data-coord="D2"></div>
-            <div class="square" data-coord="D3"></div>
-            <div class="square hotdog" data-coord="D4">🌭</div>
-            <div class="square" data-coord="D5"></div>
-            
-            <div class="square" data-coord="E1"></div>
-            <div class="square" data-coord="E2"></div>
-            <div class="square statue" data-coord="E3">🏛️</div>
-            <div class="square" data-coord="E4"></div>
-            <div class="square" data-coord="E5"></div>
-
-            <div class="pigeon pigeon-red" data-id="R1" data-coord="A5" style="grid-area: 1 / 5;">🐦</div>
-            <div class="pigeon pigeon-blue" data-id="B1" data-coord="E1" style="grid-area: 5 / 1;">🦅</div>
-        </div>
-
         <div id="player-status">
-            <h2>Your Hand</h2>
-            <p>Pigeons Placed: <span id="placed-pigeons">0</span> / 5 | Roll Target: <span id="roll-target-info">Roll the dice!</span></p>
-            <div id="hand-display">
-                </div>
-            <button onclick="document.getElementById('instructions-modal').style.display='block'" 
-                    style="margin-top: 10px; background-color: #5c6bc0; color: white;" class="small-btn">Show Instructions</button>
+            <h2>Current Turn: <span id="current-player-display">Player RED</span></h2>
+            <p>RED Position: <span id="pos-red">1</span> | BLUE Position: <span id="pos-blue">1</span></p>
+            <p id="game-message">Roll the dice to start the race!</p>
+        </div>
+        
+        <div id="game-board">
+            <div class="token token-red" data-player="red" style="transform: translate(0%, 0%);">R</div>
+            <div class="token token-blue" data-player="blue" style="transform: translate(0%, 0%);">B</div>
         </div>
 
         <div id="action-area">
             <div id="dice-display">
                 <span id="current-roll">?</span>
             </div>
-            <button id="roll-button">ROLL THE CHAOS DICE!</button>
-            <p id="game-message" style="font-weight: bold; color: #d32f2f;">Welcome! Roll to begin.</p>
+            <button id="roll-button">ROLL DICE</button>
         </div>
 
         <div id="online-area">
             <p>Room Code: <div id="room-code-display">ABCDEF</div></p>
-            <button id="save-button" class="small-btn" style="background-color: #388e3c; color: white;">Save Game</button>
+            <button id="save-button" class="small-btn" style="background-color: #00bcd4; color: white;">Save Game</button>
+            <button onclick="document.getElementById('instructions-modal').style.display='block'" 
+                    class="small-btn" style="background-color: #795548; color: white;">Show Instructions</button>
         </div>
 
     </div>
@@ -279,51 +228,62 @@
     <div id="instructions-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="document.getElementById('instructions-modal').style.display='none'">&times;</span>
-            <h2>Pigeon Plop Rules 🐦💩</h2>
+            <h2>Game Rules 🐍</h2>
             <hr>
-            <p><strong>Goal:</strong> Be the first to place 5 of your Pigeons (🐦) onto the Statue squares (🏛️).</p>
+            <p><strong>Goal:</strong> Be the first player to land exactly on **Square 100**.</p>
             
-            <h3>How to Play:</h3>
-            <ul class="rule-list">
-                <li><strong>Roll the Dice:</strong> The number (1-5) corresponds to the position of a card in your Hand (left-to-right).</li>
-                <li><strong>Mandatory Action:</strong> If a number matches a card, you **MUST** click the active card to perform the action. The card is then discarded.</li>
-                <li><strong>Chaos Roll (6):</strong> Roll a 6, and you **draw a new random card**. If your hand is full, you must click a card to discard it.</li>
-            </ul>
-
-            <h3>Card Actions:</h3>
-            <ul class="rule-list">
-                <li>**Plop 💩:** Place an unplaced Pigeon onto an adjacent empty square or directly onto an open Statue.</li>
-                <li>**Bread Crumbs 🍞:** Lure an opponent's Pigeon one space towards the nearest Hot Dog Stand (🌭).</li>
-                <li>**Fountain Flush 💧:** All pieces next to a Fountain (⛲) are moved back 2 spaces.</li>
-                <li>**Seagull 🦅:** Swap the position of any two empty/non-statue squares on the board.</li>
+            <h3>Special Squares:</h3>
+            <ul>
+                <li>🟢 **Booster:** Land on the start of a Booster, and you **move up** to the target square.</li>
+                <li>🔴 **Hazard:** Land on a Hazard head, and you **slide down** to the target square.</li>
+                <li>🟡 **Skip:** Land exactly here, and you **lose your next turn**.</li>
+                <li>🔵 **Double:** Land exactly here, and you get to **roll again** immediately.</li>
             </ul>
         </div>
     </div>
 
     <script>
         const DOM = {
+            board: document.getElementById('game-board'),
             roll: document.getElementById('current-roll'),
             message: document.getElementById('game-message'),
             rollButton: document.getElementById('roll-button'),
-            handDisplay: document.getElementById('hand-display'),
-            placedCount: document.getElementById('placed-pigeons'),
-            rollTargetInfo: document.getElementById('roll-target-info'),
+            currentPlayerDisplay: document.getElementById('current-player-display'),
+            posRed: document.getElementById('pos-red'),
+            posBlue: document.getElementById('pos-blue'),
+            tokenRed: document.querySelector('.token-red'),
+            tokenBlue: document.querySelector('.token-blue'),
             roomCode: document.getElementById('room-code-display'),
             modal: document.getElementById('instructions-modal')
         };
 
-        // --- GAME STATE ---
-        const CARD_TYPES = ["Plop 💩", "Bread Crumbs 🍞", "Fountain Flush 💧", "Seagull 🦅", "Random Draw ❓"];
-        const MAX_HAND_SIZE = 5;
+        // Configuration of the 10x10 board path and special squares
+        const BOARD_SIZE = 100;
+        const SPECIAL_SQUARES = {
+            // Booster: [Start, Target]
+            4: {type: 'booster', target: 35, icon: '⬆️'}, 
+            13: {type: 'booster', target: 45, icon: '⬆️'},
+            27: {type: 'booster', target: 76, icon: '⬆️'},
+            49: {type: 'booster', target: 88, icon: '⬆️'},
+            // Hazard: [Head, Tail]
+            98: {type: 'hazard', target: 54, icon: '☠️'}, 
+            80: {type: 'hazard', target: 38, icon: '☠️'},
+            55: {type: 'hazard', target: 12, icon: '☠️'},
+            32: {type: 'hazard', target: 2, icon: '☠️'},
+            // Skip & Double Squares
+            20: {type: 'skip', icon: '🛑'},
+            70: {type: 'skip', icon: '🛑'},
+            40: {type: 'double', icon: '🎲'},
+            90: {type: 'double', icon: '🎲'}
+        };
 
+        // --- GAME STATE ---
         let gameState = {
+            playerPositions: { 'red': 1, 'blue': 1 },
             currentPlayer: 'red',
-            playerHands: {
-                'red': ["Plop 💩", "Bread Crumbs 🍞", "Fountain Flush 💧"],
-            },
-            placedPigeons: 0,
             lastRoll: 0,
-            roomCode: 'SINGLE'
+            roomCode: 'SINGLE',
+            skipTurn: { 'red': false, 'blue': false }
         };
 
         // --- Utility Functions ---
@@ -338,130 +298,187 @@
             DOM.roomCode.textContent = code;
         }
 
-        function updateDisplay() {
-            // Update the Hand buttons
-            DOM.handDisplay.innerHTML = '';
-            const currentHand = gameState.playerHands[gameState.currentPlayer];
+        // Calculates the coordinates (row, col) from the square number (1-100)
+        function getCoords(squareNum) {
+            const row = Math.floor((squareNum - 1) / 10);
+            let col = (squareNum - 1) % 10;
             
-            currentHand.forEach((card, index) => {
-                const button = document.createElement('button');
-                button.textContent = card;
-                button.className = 'card-button';
-                button.dataset.cardIndex = index;
-
-                const isRollMatch = gameState.lastRoll > 0 && gameState.lastRoll <= 5 && index === gameState.lastRoll - 1;
-                const isDiscardPhase = gameState.lastRoll === 6 && currentHand.length >= MAX_HAND_SIZE;
-                
-                if (isRollMatch || isDiscardPhase) {
-                    button.classList.add('active');
-                    if (isRollMatch) DOM.rollTargetInfo.textContent = `REQUIRED: ${card}`;
-                    button.onclick = () => handleCardAction(index, isDiscardPhase);
-                } else if (gameState.lastRoll === 6 && card === "Random Draw ❓") {
-                    // Always allow the 'Random Draw' card if it's in hand and roll is 6
-                    button.classList.add('active');
-                    button.onclick = () => handleCardAction(index);
-                }
-                
-                DOM.handDisplay.appendChild(button);
-            });
+            // Snake pattern: odd rows (from bottom: 0, 2, 4...) go left-to-right (col 0-9)
+            // even rows (from bottom: 1, 3, 5...) go right-to-left (col 9-0)
+            const actualRow = 9 - row; // 9 is bottom row, 0 is top row
             
-            if (gameState.lastRoll === 0) DOM.rollTargetInfo.textContent = 'Roll the dice!';
-
-            DOM.placedCount.textContent = gameState.placedPigeons;
+            if (actualRow % 2 !== 0) {
+                col = 9 - col;
+            }
+            
+            return { row: actualRow, col: col };
         }
 
-        function drawCard() {
-            // Randomly select a card type
-            const newCard = CARD_TYPES[Math.floor(Math.random() * CARD_TYPES.length)]; 
-            const hand = gameState.playerHands[gameState.currentPlayer];
+        function renderBoard() {
+            DOM.board.innerHTML = '';
+            
+            // Create all 100 squares
+            for (let i = 1; i <= BOARD_SIZE; i++) {
+                const square = document.createElement('div');
+                square.className = 'square';
+                square.textContent = i;
+                square.dataset.number = i;
 
-            if (hand.length < MAX_HAND_SIZE) {
-                hand.push(newCard);
-                DOM.message.textContent = `CHAOS ROLL! You drew a new card: ${newCard}!`;
-            } else {
-                DOM.message.textContent = `CHAOS ROLL! Hand is full! Click a card to discard it.`;
+                if (i === BOARD_SIZE) square.classList.add('finish');
+
+                const coords = getCoords(i);
+                square.style.gridRowStart = coords.row + 1;
+                square.style.gridColumnStart = coords.col + 1;
+                
+                // Add special element styling and icon
+                if (SPECIAL_SQUARES[i]) {
+                    square.classList.add(SPECIAL_SQUARES[i].type);
+                    const icon = document.createElement('span');
+                    icon.textContent = SPECIAL_SQUARES[i].icon;
+                    icon.style.fontSize = '1.2em';
+                    square.appendChild(icon);
+                }
+
+                DOM.board.appendChild(square);
             }
+            
+            // Re-append tokens so they are on top
+            DOM.board.appendChild(DOM.tokenRed);
+            DOM.board.appendChild(DOM.tokenBlue);
+        }
+
+        function updateTokenPosition(player, position) {
+            const token = player === 'red' ? DOM.tokenRed : DOM.tokenBlue;
+            const coords = getCoords(position);
+            
+            // Adjust coordinates for the board grid (1-based index)
+            const rowStart = coords.row + 1;
+            const colStart = coords.col + 1;
+
+            token.style.gridRowStart = rowStart;
+            token.style.gridColumnStart = colStart;
+        }
+
+        function updateDisplay() {
+            DOM.currentPlayerDisplay.textContent = gameState.currentPlayer.toUpperCase();
+            DOM.posRed.textContent = gameState.playerPositions.red;
+            DOM.posBlue.textContent = gameState.playerPositions.blue;
+
+            updateTokenPosition('red', gameState.playerPositions.red);
+            updateTokenPosition('blue', gameState.playerPositions.blue);
+        }
+
+        // --- Core Game Logic ---
+
+        function movePlayer(player, diceRoll) {
+            let newPos = gameState.playerPositions[player] + diceRoll;
+            let message = `${player.toUpperCase()} rolled a ${diceRoll}. Moving to square ${newPos}.`;
+            let bonusRoll = false;
+            
+            // 1. Check for overshoot (Must land EXACTLY on 100)
+            if (newPos > BOARD_SIZE) {
+                newPos = gameState.playerPositions[player]; // Stay put
+                message = `${player.toUpperCase()} needs to roll a ${BOARD_SIZE - gameState.playerPositions[player]} to win! Staying at ${newPos}.`;
+                gameState.playerPositions[player] = newPos;
+                DOM.message.textContent = message;
+                return bonusRoll;
+            }
+
+            // 2. Update position
+            gameState.playerPositions[player] = newPos;
+            updateTokenPosition(player, newPos);
+
+            // 3. Check for special squares
+            if (SPECIAL_SQUARES[newPos]) {
+                const square = SPECIAL_SQUARES[newPos];
+                
+                switch (square.type) {
+                    case 'booster':
+                        gameState.playerPositions[player] = square.target;
+                        message += ` WOW! Hit a **BOOSTER** and shot up to ${square.target}!`;
+                        break;
+                    case 'hazard':
+                        gameState.playerPositions[player] = square.target;
+                        message += ` OH NO! Hit a **HAZARD** and slid back to ${square.target}!`;
+                        break;
+                    case 'skip':
+                        gameState.skipTurn[player] = true;
+                        message += ` WHOOPS! Hit a **SKIP** square. You lose your next turn.`;
+                        break;
+                    case 'double':
+                        bonusRoll = true;
+                        message += ` YES! Hit a **DOUBLE** square. You get to roll again!`;
+                        break;
+                }
+            }
+            
+            // 4. Check for Win
+            if (newPos === BOARD_SIZE) {
+                message = `🎉 **${player.toUpperCase()} WINS!** You reached Square 100!`;
+                DOM.rollButton.disabled = true;
+            }
+
+            DOM.message.textContent = message;
+            return bonusRoll;
         }
 
         function handleRoll() {
-            if (gameState.lastRoll !== 0) {
-                DOM.message.textContent = "Complete your action or discard first!";
+            if (DOM.rollButton.disabled) return;
+
+            const player = gameState.currentPlayer;
+            
+            // Check for skip turn
+            if (gameState.skipTurn[player]) {
+                DOM.message.textContent = `${player.toUpperCase()} is skipping their turn (Skip Square penalty).`;
+                gameState.skipTurn[player] = false; // Penalty consumed
+                switchTurn();
                 return;
             }
 
             const roll = Math.floor(Math.random() * 6) + 1;
             gameState.lastRoll = roll;
             DOM.roll.textContent = roll;
+            DOM.rollButton.disabled = true;
             
-            if (roll === 6) {
-                drawCard();
-            } else if (gameState.playerHands[gameState.currentPlayer].length > roll - 1) {
-                DOM.message.textContent = `Rolled ${roll}. Action MUST be taken!`;
-            } else {
-                DOM.message.textContent = `Rolled ${roll}. No card in position ${roll}! Turn passed.`;
-                endTurn();
-            }
-
-            updateDisplay();
-        }
-
-        function handleCardAction(cardIndex, isDiscard = false) {
-            const cardName = gameState.playerHands[gameState.currentPlayer][cardIndex];
-
-            if (isDiscard) {
-                gameState.playerHands[gameState.currentPlayer].splice(cardIndex, 1);
-                DOM.message.textContent = `Discarded ${cardName}. Turn ended.`;
-            } else {
-                // --- Simple Placeholder Logic for Card Effects ---
-                if (cardName === "Plop 💩" && gameState.placedPigeons < 5) {
-                    gameState.placedPigeons++;
-                    DOM.message.textContent = "Pigeon Plop! One more pigeon placed! (Need full movement logic)";
-                } else if (cardName === "Random Draw ❓") {
-                    drawCard();
-                    DOM.message.textContent = "Random Draw used. Card consumed. Draw again!";
-                } else {
-                    DOM.message.textContent = `Used ${cardName}. Chaos ensues! (Requires full movement logic)`;
-                }
+            // Slight delay before movement for visual effect
+            setTimeout(() => {
+                const bonusRoll = movePlayer(player, roll);
                 
-                // Card is consumed unless it's a special case (like a bonus roll/draw)
-                if (cardName !== "Random Draw ❓") {
-                    gameState.playerHands[gameState.currentPlayer].splice(cardIndex, 1);
+                if (bonusRoll) {
+                    DOM.rollButton.disabled = false; // Keep the same player active
+                } else if (gameState.playerPositions[player] !== BOARD_SIZE) {
+                    switchTurn();
                 }
-            }
-           
-            endTurn();
+
+            }, 700);
         }
 
-        function endTurn() {
-            gameState.lastRoll = 0;
-            // gameState.currentPlayer = gameState.currentPlayer === 'red' ? 'blue' : 'red'; // For multiplayer/AI
-            
-            if (gameState.placedPigeons >= 5) {
-                DOM.message.textContent = `🎉 WINNER! You are the Pigeon Baron!`;
-                DOM.rollButton.disabled = true;
-            }
-            
+        function switchTurn() {
+            gameState.currentPlayer = gameState.currentPlayer === 'red' ? 'blue' : 'red';
+            DOM.rollButton.disabled = false;
+            DOM.message.textContent = `It's ${gameState.currentPlayer.toUpperCase()}'s turn. Roll the dice!`;
             updateDisplay();
         }
 
         // --- Local Storage Functions ---
 
         function saveGame() {
-            localStorage.setItem('pigeonPlopSave', JSON.stringify(gameState));
+            localStorage.setItem('snakesBoostersSave', JSON.stringify(gameState));
             DOM.message.textContent = `Game state SAVED! Code: ${gameState.roomCode}`;
         }
 
         function loadGame() {
-            const savedState = localStorage.getItem('pigeonPlopSave');
+            const savedState = localStorage.getItem('snakesBoostersSave');
             if (savedState) {
                 gameState = JSON.parse(savedState);
-                DOM.message.textContent = `Game LOADED! It's your turn.`;
+                DOM.message.textContent = `Game LOADED! It is ${gameState.currentPlayer.toUpperCase()}'s turn.`;
             } else {
                 generateRoomCode();
-                DOM.message.textContent = "Welcome, Baron! Roll to start the Plop!";
-                // Show instructions automatically on first load
+                DOM.message.textContent = "Welcome! Roll to start the race!";
                 DOM.modal.style.display='block';
             }
+            
+            renderBoard();
             updateDisplay();
         }
 
