@@ -5,350 +5,297 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🐍 Snakes & Boosters Online</title>
 
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
-  import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-database.js";
-
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyDezuEzLaVrbFrYtFdHLjS-A-s-1yhduLY",
-    authDomain: "game-794ad.firebaseapp.com",
-    databaseURL: "https://game-794ad-default-rtdb.firebaseio.com/",
-    projectId: "game-794ad",
-    storageBucket: "game-794ad.appspot.com",
-    messagingSenderId: "804274377887",
-    appId: "1:804274377887:web:205f5ec40874f04b6c3eaa"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
-
-  window.firebaseApp = app;
-  window.db = database;
-</script>
-
 <style>
 body {
-    font-family: 'Arial', sans-serif;
-    background: #fce4ec;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 0;
-    padding: 10px;
+  font-family: Arial, sans-serif;
+  background: #fce4ec;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  padding: 10px;
 }
 header h1 {
-    color: #d81b60;
-    text-shadow: 2px 2px #f8bbd0;
+  color: #d81b60;
+  text-shadow: 2px 2px #f8bbd0;
 }
 #game-container {
-    width: 100%;
-    max-width: 500px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background: white;
-    padding: 15px;
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: white;
+  padding: 15px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 #game-board {
-    display: grid;
-    grid-template-columns: repeat(10,1fr);
-    grid-template-rows: repeat(10,1fr);
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    border: 4px solid #4a148c;
-    background-color: #f3e5f5;
-    border-radius: 10px;
-    position: relative;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 4px solid #4a148c;
+  background-color: #f3e5f5;
+  border-radius: 10px;
+  position: relative;
 }
 .square {
-    border: 1px solid #ce93d8;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 0.7em;
-    position: relative;
-    font-weight: bold;
+  border: 1px solid #ce93d8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.7em;
+  position: relative;
+  font-weight: bold;
 }
 .booster { background-color: #a5d6a7; color: green; }
 .hazard { background-color: #ef9a9a; color: red; }
 .skip { background-color: #fff59d; color: orange; }
 .double { background-color: #90caf9; color: blue; }
-.finish { background-color: #81c784; color: white; font-size: 1em; }
-
 .token {
-    position: absolute;
-    width: 8%;
-    height: 8%;
-    border-radius: 50%;
-    z-index: 10;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 0.7em;
-    color: white;
-    font-weight: bold;
-    transition: all 0.5s ease-in-out;
+  position: absolute;
+  width: 8%;
+  height: 8%;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.7em;
+  color: white;
+  font-weight: bold;
+  transition: all 0.5s ease-in-out;
 }
-#action-area { text-align: center; margin-top: 10px; }
+button {
+  padding: 10px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 5px;
+}
 #dice-display {
-    font-size: 2em;
-    width: 50px; height: 50px;
-    margin: 0 auto; line-height:50px;
-    border: 3px solid #ff4081; border-radius: 8px; background:white;
+  font-size: 2em;
+  width: 50px;
+  height: 50px;
+  margin: 0 auto;
+  line-height: 50px;
+  border: 3px solid #ff4081;
+  border-radius: 8px;
+  background: white;
 }
-button { padding: 10px 15px; border-radius: 10px; cursor:pointer; margin-top:5px; }
-#game-message { font-weight: bold; min-height: 20px; margin-top:5px; text-align:center; }
 </style>
 </head>
-<body>
 
+<body>
 <header><h1>🐍 Snakes & Boosters Online</h1></header>
 
 <div id="game-container">
-    <div id="mode-selection">
-        <p>Select Mode:</p>
-        <button onclick="startSinglePlayer()">Single Player vs AI</button>
-        <button onclick="startMultiplayer()">Multiplayer Online</button>
-    </div>
+  <div id="mode-selection">
+    <p>Select Mode:</p>
+    <button id="single-btn">Single Player vs AI</button>
+    <button id="multi-btn">Multiplayer Online</button>
+  </div>
 
-    <div id="online-room" style="display:none;">
-        <p>Enter Room Code: <input type="text" id="room-code-input" maxlength="6"></p>
-        <button onclick="joinRoom()">Join Room</button>
-        <button onclick="createRoom()">Create Room</button>
-        <p>Your Room Code: <span id="room-display"></span></p>
-    </div>
+  <div id="online-room" style="display:none;">
+    <p>Enter Room Code: <input type="text" id="room-code-input" maxlength="6"></p>
+    <button id="join-room-btn">Join Room</button>
+    <button id="create-room-btn">Create Room</button>
+    <p>Your Room Code: <span id="room-display"></span></p>
+  </div>
 
-    <div id="player-status" style="display:none;">
-        <h2>Current Turn: <span id="current-player-display"></span></h2>
-        <p id="players-positions"></p>
-        <p id="game-message">Roll the dice to start!</p>
-    </div>
+  <div id="player-status" style="display:none;">
+    <h2>Current Turn: <span id="current-player-display"></span></h2>
+    <p id="players-positions"></p>
+    <p id="game-message">Roll the dice to start!</p>
+  </div>
 
-    <div id="game-board"></div>
+  <div id="game-board"></div>
 
-    <div id="action-area" style="display:none;">
-        <div id="dice-display">?</div>
-        <button id="roll-button">ROLL DICE</button>
-    </div>
+  <div id="action-area" style="display:none;">
+    <div id="dice-display">?</div>
+    <button id="roll-button">ROLL DICE</button>
+  </div>
 </div>
 
 <script type="module">
-import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-database.js";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyDezuEzLaVrbFrYtFdHLjS-A-s-1yhduLY",
+  authDomain: "game-794ad.firebaseapp.com",
+  databaseURL: "https://game-794ad-default-rtdb.firebaseio.com/",
+  projectId: "game-794ad",
+  storageBucket: "game-794ad.appspot.com",
+  messagingSenderId: "804274377887",
+  appId: "1:804274377887:web:205f5ec40874f04b6c3eaa"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// --- GAME LOGIC ---
 const BOARD_SIZE = 100;
 const SPECIAL_SQUARES = {
-  4:{type:'booster',target:35},13:{type:'booster',target:45},27:{type:'booster',target:76},49:{type:'booster',target:88},
-  32:{type:'hazard',target:2},55:{type:'hazard',target:12},80:{type:'hazard',target:38},98:{type:'hazard',target:54},
-  20:{type:'skip'},70:{type:'skip'},40:{type:'double'},90:{type:'double'}
+  4:{type:'booster',target:35},
+  13:{type:'booster',target:45},
+  27:{type:'booster',target:76},
+  49:{type:'booster',target:88},
+  32:{type:'hazard',target:2},
+  55:{type:'hazard',target:12},
+  80:{type:'hazard',target:38},
+  98:{type:'hazard',target:54},
 };
 
-let gameState = {
-    players:{},
-    currentPlayer:"",
-    lastRoll:0,
-    status:"ongoing",
-    roomCode:""
-};
+let gameState = { players:{}, currentPlayer:"", roomCode:"", status:"waiting" };
+let tokens = {};
 
-const DOM = {
-    board: document.getElementById('game-board'),
-    message: document.getElementById('game-message'),
-    rollButton: document.getElementById('roll-button'),
-    currentPlayerDisplay: document.getElementById('current-player-display'),
-    playersPositions: document.getElementById('players-positions'),
-    dice: document.getElementById('dice-display')
-};
+const board = document.getElementById('game-board');
+const msg = document.getElementById('game-message');
+const dice = document.getElementById('dice-display');
+const rollBtn = document.getElementById('roll-button');
 
-let tokens = {}; // token DOM elements
-
-function getCoords(squareNum){
-    const row = Math.floor((squareNum-1)/10);
-    let col = (squareNum-1)%10;
-    const actualRow = 9-row;
-    if(actualRow%2!==0) col = 9-col;
-    return {row:actualRow, col:col};
+function getCoords(n){
+  const row = Math.floor((n-1)/10);
+  let col = (n-1)%10;
+  const r = 9-row;
+  if(r%2!==0) col = 9-col;
+  return { row:r, col:col };
 }
 
 function renderBoard(){
-    DOM.board.innerHTML="";
-    for(let i=1;i<=BOARD_SIZE;i++){
-        const sq = document.createElement('div');
-        sq.className="square";
-        sq.textContent=i;
-        if(SPECIAL_SQUARES[i]) sq.classList.add(SPECIAL_SQUARES[i].type);
-        const coords=getCoords(i);
-        sq.style.gridRowStart=coords.row+1;
-        sq.style.gridColumnStart=coords.col+1;
-        DOM.board.appendChild(sq);
-    }
-    for(const p in tokens) DOM.board.appendChild(tokens[p]);
+  board.innerHTML="";
+  for(let i=1;i<=BOARD_SIZE;i++){
+    const sq=document.createElement('div');
+    sq.className="square";
+    sq.textContent=i;
+    if(SPECIAL_SQUARES[i]) sq.classList.add(SPECIAL_SQUARES[i].type);
+    board.appendChild(sq);
+  }
+  for(const p in tokens) board.appendChild(tokens[p]);
 }
 
 function updateTokens(){
-    for(const p in gameState.players){
-        const token=tokens[p];
-        const pos=gameState.players[p].position;
-        const coords=getCoords(pos);
-        token.style.transform=`translate(${coords.col*10}%,${coords.row*10}%)`;
-    }
-    DOM.playersPositions.textContent=Object.entries(gameState.players).map(([k,v])=>`${v.name}: ${v.position}`).join(" | ");
-    DOM.currentPlayerDisplay.textContent=gameState.currentPlayer;
+  for(const p in gameState.players){
+    const pos=gameState.players[p].position;
+    const coords=getCoords(pos);
+    const token=tokens[p];
+    token.style.transform=`translate(${coords.col*10}%,${coords.row*10}%)`;
+  }
+  document.getElementById('players-positions').textContent =
+    Object.entries(gameState.players).map(([k,v])=>`${v.name}: ${v.position}`).join(" | ");
+  document.getElementById('current-player-display').textContent = gameState.currentPlayer;
 }
 
 function rollDice(){
-    if(gameState.status!=="ongoing") return;
-    const roll=Math.floor(Math.random()*6)+1;
-    DOM.dice.textContent=roll;
-    movePlayer(gameState.currentPlayer, roll);
+  const roll=Math.floor(Math.random()*6)+1;
+  dice.textContent=roll;
+  movePlayer(gameState.currentPlayer, roll);
 }
 
-function movePlayer(player, roll){
-    let newPos=gameState.players[player].position+roll;
-    if(newPos>BOARD_SIZE) newPos=gameState.players[player].position;
-    gameState.players[player].position=newPos;
-
-    if(SPECIAL_SQUARES[newPos]){
-        const sq=SPECIAL_SQUARES[newPos];
-        if(sq.type==='booster') gameState.players[player].position=sq.target;
-        else if(sq.type==='hazard') gameState.players[player].position=sq.target;
-        else if(sq.type==='skip') gameState.players[player].skip=true;
-        else if(sq.type==='double') gameState.players[player].double=true;
-    }
-
-    if(gameState.players[player].position===BOARD_SIZE){
-        gameState.status="finished";
-        DOM.message.textContent=`🎉 ${gameState.players[player].name} WINS!`;
-    }
-
-    updateTokens();
-    saveGameState();
-
-    if(gameState.players[player].double){
-        gameState.players[player].double=false;
-        DOM.message.textContent=`${gameState.players[player].name} rolled double square! Roll again.`;
-        return;
-    }
-
-    nextTurn();
+function movePlayer(p, roll){
+  let pos=gameState.players[p].position+roll;
+  if(pos>BOARD_SIZE) pos=gameState.players[p].position;
+  gameState.players[p].position=pos;
+  if(SPECIAL_SQUARES[pos]){
+    gameState.players[p].position=SPECIAL_SQUARES[pos].target;
+  }
+  if(gameState.players[p].position===BOARD_SIZE){
+    msg.textContent=`🎉 ${gameState.players[p].name} Wins!`;
+    return;
+  }
+  updateTokens();
+  nextTurn();
 }
 
 function nextTurn(){
-    const keys=Object.keys(gameState.players);
-    let idx=keys.indexOf(gameState.currentPlayer);
-    do{
-        idx=(idx+1)%keys.length;
-        gameState.currentPlayer=keys[idx];
-    }while(gameState.players[gameState.currentPlayer].skip && (gameState.players[gameState.currentPlayer].skip=false));
-    
-    updateTokens();
-
-    if(gameState.players[gameState.currentPlayer].isAI){
-        DOM.message.textContent=`AI ${gameState.players[gameState.currentPlayer].name} is rolling...`;
-        setTimeout(()=>rollDice(), 800);
-    }else{
-        DOM.message.textContent=`${gameState.players[gameState.currentPlayer].name}'s turn. Roll the dice!`;
-        DOM.rollButton.disabled=false;
-    }
+  const keys=Object.keys(gameState.players);
+  let i=keys.indexOf(gameState.currentPlayer);
+  gameState.currentPlayer=keys[(i+1)%keys.length];
+  updateTokens();
+  const cp=gameState.players[gameState.currentPlayer];
+  if(cp.isAI){
+    msg.textContent=`AI rolling...`;
+    setTimeout(()=>rollDice(),1000);
+  }else{
+    msg.textContent=`${cp.name}'s turn`;
+  }
 }
 
-function saveGameState(){
-    if(gameState.roomCode){
-        set(ref(db,'rooms/'+gameState.roomCode), gameState);
-    }
-}
-
-function loadGameState(roomCode){
-    const roomRef=ref(db,'rooms/'+roomCode);
-    onValue(roomRef,(snap)=>{
-        const data=snap.val();
-        if(data){
-            gameState=data;
-            for(const p in gameState.players){
-                if(!tokens[p]){
-                    const token=document.createElement('div');
-                    token.className='token';
-                    token.textContent=p[0];
-                    token.style.backgroundColor=p.toLowerCase();
-                    tokens[p]=token;
-                }
-            }
-            renderBoard();
-            updateTokens();
-        }
-    });
-}
-
-document.getElementById('roll-button').addEventListener('click', ()=>{
-    DOM.rollButton.disabled=true;
-    rollDice();
-});
-
-// --- Game Mode Functions ---
+// ----- MODES -----
 function startSinglePlayer(){
-    document.getElementById('mode-selection').style.display='none';
-    setupGame({RED:{position:1,isAI:false,name:"You"},BLUE:{position:1,isAI:true,name:"AI"}})
+  document.getElementById('mode-selection').style.display='none';
+  setupGame({RED:{position:1,name:"You",isAI:false},BLUE:{position:1,name:"AI",isAI:true}});
+}
+
+function setupGame(players){
+  gameState.players=players;
+  gameState.currentPlayer=Object.keys(players)[0];
+  document.getElementById('player-status').style.display='block';
+  document.getElementById('action-area').style.display='block';
+
+  for(const p in players){
+    const t=document.createElement('div');
+    t.className='token';
+    t.style.backgroundColor=p.toLowerCase();
+    t.textContent=p[0];
+    tokens[p]=t;
+  }
+  renderBoard();
+  updateTokens();
+
+  if(gameState.players[gameState.currentPlayer].isAI){
+    setTimeout(()=>rollDice(),1000);
+  }
 }
 
 function startMultiplayer(){
-    document.getElementById('mode-selection').style.display='none';
-    document.getElementById('online-room').style.display='block';
+  document.getElementById('mode-selection').style.display='none';
+  document.getElementById('online-room').style.display='block';
 }
 
 function createRoom(){
-    const code=Math.random().toString(36).substring(2,8).toUpperCase();
-    const players={RED:{position:1,isAI:false,name:"You"}};
-    gameState={players:players,currentPlayer:"RED",lastRoll:0,status:"ongoing",roomCode:code};
-    document.getElementById('room-display').textContent=code;
-    loadGameState(code);
-    document.getElementById('online-room').style.display='none';
-    document.getElementById('player-status').style.display='block';
-    document.getElementById('action-area').style.display='block';
-    for(const p in players){
-        const token=document.createElement('div');
-        token.className='token';
-        token.textContent=p[0];
-        token.style.backgroundColor=p.toLowerCase();
-        tokens[p]=token;
-    }
-    renderBoard();
-    updateTokens();
-    saveGameState();
+  const code=Math.random().toString(36).substring(2,8).toUpperCase();
+  gameState={players:{RED:{position:1,name:"Host",isAI:false}},currentPlayer:"RED",roomCode:code,status:"ongoing"};
+  set(ref(db,'rooms/'+code),gameState);
+  document.getElementById('room-display').textContent=code;
+  loadRoom(code);
 }
 
 function joinRoom(){
-    const code=document.getElementById('room-code-input').value.toUpperCase();
-    if(!code) return;
-    loadGameState(code);
-    gameState.roomCode=code;
+  const code=document.getElementById('room-code-input').value.toUpperCase();
+  if(!code)return;
+  loadRoom(code);
+}
+
+function loadRoom(code){
+  const r=ref(db,'rooms/'+code);
+  onValue(r,snap=>{
+    const data=snap.val();
+    if(!data)return;
+    gameState=data;
     document.getElementById('online-room').style.display='none';
     document.getElementById('player-status').style.display='block';
     document.getElementById('action-area').style.display='block';
-}
-  
-function setupGame(players){
-    gameState={players:players,currentPlayer:Object.keys(players)[0],lastRoll:0,status:"ongoing",roomCode:""};
-    document.getElementById('player-status').style.display='block';
-    document.getElementById('action-area').style.display='block';
-    for(const p in players){
-        const token=document.createElement('div');
-        token.className='token';
-        token.textContent=p[0];
-        token.style.backgroundColor=p.toLowerCase();
-        tokens[p]=token;
+    for(const p in gameState.players){
+      if(!tokens[p]){
+        const t=document.createElement('div');
+        t.className='token';
+        t.style.backgroundColor=p.toLowerCase();
+        t.textContent=p[0];
+        tokens[p]=t;
+      }
     }
     renderBoard();
     updateTokens();
-
-    if(gameState.players[gameState.currentPlayer].isAI){
-        DOM.message.textContent=`AI ${gameState.players[gameState.currentPlayer].name} is rolling...`;
-        setTimeout(()=>rollDice(), 800);
-    }
+  });
 }
-</script>
 
+// attach button listeners
+document.getElementById('single-btn').addEventListener('click', startSinglePlayer);
+document.getElementById('multi-btn').addEventListener('click', startMultiplayer);
+document.getElementById('create-room-btn').addEventListener('click', createRoom);
+document.getElementById('join-room-btn').addEventListener('click', joinRoom);
+rollBtn.addEventListener('click', rollDice);
+</script>
 </body>
 </html>
