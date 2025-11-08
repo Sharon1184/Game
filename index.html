@@ -3,458 +3,352 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🐍 Snakes & Boosters Race Deluxe</title>
+<title>🐍 Snakes & Boosters Online</title>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+  import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-database.js";
+
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDezuEzLaVrbFrYtFdHLjS-A-s-1yhduLY",
+    authDomain: "game-794ad.firebaseapp.com",
+    databaseURL: "https://game-794ad-default-rtdb.firebaseio.com/",
+    projectId: "game-794ad",
+    storageBucket: "game-794ad.appspot.com",
+    messagingSenderId: "804274377887",
+    appId: "1:804274377887:web:205f5ec40874f04b6c3eaa"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+
+  window.firebaseApp = app;
+  window.db = database;
+</script>
+
 <style>
-/* ===== BASE & TYPOGRAPHY ===== */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-    margin: 0;
-    padding: 10px;
+    font-family: 'Arial', sans-serif;
+    background: #fce4ec;
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: #333;
+    margin: 0;
+    padding: 10px;
 }
-
 header h1 {
-    font-size: 2em;
-    color: #fff;
-    text-shadow: 2px 2px #ff4081;
-    margin-bottom: 10px;
-    text-align: center;
+    color: #d81b60;
+    text-shadow: 2px 2px #f8bbd0;
 }
-
-/* ===== GAME CONTAINER ===== */
 #game-container {
     width: 100%;
-    max-width: 600px;
-    background: #fff;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: white;
+    padding: 15px;
     border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
-
-/* ===== PLAYER STATUS ===== */
-#player-status {
-    background: #f3e5f5;
-    padding: 12px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    margin-bottom: 15px;
-    text-align: center;
-    transition: all 0.3s;
-}
-#player-status.active-red { border: 3px solid #e53935; }
-#player-status.active-blue { border: 3px solid #1e88e5; }
-
-/* ===== GAME BOARD ===== */
 #game-board {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    grid-template-rows: repeat(10, 1fr);
+    grid-template-columns: repeat(10,1fr);
+    grid-template-rows: repeat(10,1fr);
     width: 100%;
-    aspect-ratio: 1/1;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: inset 0 0 15px rgba(0,0,0,0.2);
-    margin-bottom: 15px;
+    aspect-ratio: 1 / 1;
+    border: 4px solid #4a148c;
+    background-color: #f3e5f5;
+    border-radius: 10px;
+    position: relative;
 }
-
 .square {
+    border: 1px solid #ce93d8;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-weight: bold;
-    font-size: 0.8em;
-    border: 1px solid #ccc;
+    font-size: 0.7em;
     position: relative;
-    transition: all 0.3s ease;
-}
-.square.finish {
-    font-size: 1.2em;
     font-weight: bold;
-    color: white;
-    background: linear-gradient(45deg, #4caf50, #81c784);
 }
+.booster { background-color: #a5d6a7; color: green; }
+.hazard { background-color: #ef9a9a; color: red; }
+.skip { background-color: #fff59d; color: orange; }
+.double { background-color: #90caf9; color: blue; }
+.finish { background-color: #81c784; color: white; font-size: 1em; }
 
-/* Special Squares */
-.square.booster { background: linear-gradient(135deg, #a5d6a7, #66bb6a); color: green; }
-.square.hazard { background: linear-gradient(135deg, #ef9a9a, #e53935); color: white; }
-.square.skip { background: linear-gradient(135deg, #fff59d, #fbc02d); color: #333; }
-.square.double { background: linear-gradient(135deg, #90caf9, #42a5f5); color: white; }
-
-/* ===== PLAYER TOKENS ===== */
 .token {
     position: absolute;
-    width: 50%;
-    height: 50%;
+    width: 8%;
+    height: 8%;
     border-radius: 50%;
     z-index: 10;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-weight: bold;
+    font-size: 0.7em;
     color: white;
-    font-size: 1.2em;
-    transition: transform 0.5s ease;
+    font-weight: bold;
+    transition: all 0.5s ease-in-out;
 }
-.token-red { background: #e53935; }
-.token-blue { background: #1e88e5; }
-
-/* ===== DICE & ACTIONS ===== */
-#action-area {
-    text-align: center;
-    margin-bottom: 10px;
-}
+#action-area { text-align: center; margin-top: 10px; }
 #dice-display {
-    font-size: 40px;
-    font-weight: bold;
-    margin: 10px auto;
-    width: 80px;
-    height: 80px;
-    line-height: 80px;
-    border-radius: 15px;
-    background: linear-gradient(145deg, #fff, #f3e5f5);
-    border: 4px solid #ff4081;
+    font-size: 2em;
+    width: 50px; height: 50px;
+    margin: 0 auto; line-height:50px;
+    border: 3px solid #ff4081; border-radius: 8px; background:white;
 }
-#roll-button, #reset-button {
-    margin-top: 10px;
-    padding: 12px 20px;
-    font-size: 1em;
-    font-weight: bold;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    color: white;
-    background: #ff4081;
-    box-shadow: 0 4px 0 #c51162;
-    transition: all 0.1s;
-}
-#roll-button:active, #reset-button:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 #c51162;
-}
-
-/* ===== GAME MESSAGE ===== */
-#game-message {
-    font-weight: bold;
-    font-size: 1em;
-    min-height: 20px;
-    margin-top: 5px;
-}
-
-/* ===== ONLINE AREA ===== */
-#online-area {
-    margin-top: 15px;
-    text-align: center;
-}
-#room-code-display {
-    font-size: 1.3em;
-    padding: 6px 10px;
-    border: 2px dashed #00bcd4;
-    border-radius: 6px;
-    display: inline-block;
-    margin-bottom: 10px;
-    background-color: #e0f7fa;
-}
-
-/* ===== MODAL ===== */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 100;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7);
-    justify-content: center;
-    align-items: center;
-}
-.modal-content {
-    background: #fff;
-    border-radius: 15px;
-    padding: 20px;
-    max-width: 400px;
-    width: 90%;
-    text-align: left;
-    border: 3px solid #ff4081;
-}
-.close-btn {
-    float: right;
-    font-size: 28px;
-    cursor: pointer;
-    color: #aaa;
-}
-.close-btn:hover { color: #f44336; }
-
-/* ===== SOUND EFFECT BUTTON ===== */
-#sound-toggle {
-    margin-top: 10px;
-    padding: 6px 10px;
-    font-size: 0.9em;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    background: #ff9800;
-    color: #fff;
-}
+button { padding: 10px 15px; border-radius: 10px; cursor:pointer; margin-top:5px; }
+#game-message { font-weight: bold; min-height: 20px; margin-top:5px; text-align:center; }
 </style>
 </head>
 <body>
 
-<header>
-    <h1>🐍 Snakes & Boosters Deluxe 🚀</h1>
-</header>
+<header><h1>🐍 Snakes & Boosters Online</h1></header>
 
 <div id="game-container">
-    <div id="player-status" class="active-red">
-        <h2>Current Turn: <span id="current-player-display">RED</span></h2>
-        <p>RED: <span id="pos-red">1</span> | BLUE: <span id="pos-blue">1</span></p>
+    <div id="mode-selection">
+        <p>Select Mode:</p>
+        <button onclick="startSinglePlayer()">Single Player vs AI</button>
+        <button onclick="startMultiplayer()">Multiplayer Online</button>
+    </div>
+
+    <div id="online-room" style="display:none;">
+        <p>Enter Room Code: <input type="text" id="room-code-input" maxlength="6"></p>
+        <button onclick="joinRoom()">Join Room</button>
+        <button onclick="createRoom()">Create Room</button>
+        <p>Your Room Code: <span id="room-display"></span></p>
+    </div>
+
+    <div id="player-status" style="display:none;">
+        <h2>Current Turn: <span id="current-player-display"></span></h2>
+        <p id="players-positions"></p>
         <p id="game-message">Roll the dice to start!</p>
     </div>
 
-    <div id="game-board">
-        <div class="token token-red" data-player="red">R</div>
-        <div class="token token-blue" data-player="blue">B</div>
-    </div>
+    <div id="game-board"></div>
 
-    <div id="action-area">
-        <div id="dice-display"><span id="current-roll">?</span></div>
-        <button id="roll-button">ROLL DICE 🎲</button>
-        <button id="reset-button">RESET GAME 🔄</button>
-        <button id="sound-toggle">Sound: ON 🔊</button>
-    </div>
-
-    <div id="online-area">
-        <p>Room Code: <span id="room-code-display">ABC123</span></p>
-        <button id="save-button" style="background:#00bcd4;color:white;border-radius:8px;padding:10px 15px;">Save Game</button>
-        <button onclick="document.getElementById('instructions-modal').style.display='flex'" style="background:#795548;color:white;border-radius:8px;padding:10px 15px;">Instructions</button>
+    <div id="action-area" style="display:none;">
+        <div id="dice-display">?</div>
+        <button id="roll-button">ROLL DICE</button>
     </div>
 </div>
 
-<div id="instructions-modal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="document.getElementById('instructions-modal').style.display='none'">&times;</span>
-        <h2>Game Rules 🐍</h2>
-        <hr>
-        <p><strong>Goal:</strong> Reach exactly Square 100 first!</p>
-        <ul>
-            <li>🟢 Booster: Move up to target square.</li>
-            <li>🔴 Hazard: Slide down to target square.</li>
-            <li>🟡 Skip: Lose next turn.</li>
-            <li>🔵 Double: Roll again immediately.</li>
-        </ul>
-    </div>
-</div>
-
-<script>
-const DOM = {
-    board: document.getElementById('game-board'),
-    roll: document.getElementById('current-roll'),
-    message: document.getElementById('game-message'),
-    rollButton: document.getElementById('roll-button'),
-    resetButton: document.getElementById('reset-button'),
-    currentPlayerDisplay: document.getElementById('current-player-display'),
-    posRed: document.getElementById('pos-red'),
-    posBlue: document.getElementById('pos-blue'),
-    tokenRed: document.querySelector('.token-red'),
-    tokenBlue: document.querySelector('.token-blue'),
-    roomCode: document.getElementById('room-code-display'),
-    modal: document.getElementById('instructions-modal'),
-    status: document.getElementById('player-status'),
-    soundToggle: document.getElementById('sound-toggle')
-};
+<script type="module">
+import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-database.js";
 
 const BOARD_SIZE = 100;
 const SPECIAL_SQUARES = {
-    4: {type:'booster', target:35, icon:'⬆️'},
-    13: {type:'booster', target:45, icon:'⬆️'},
-    27: {type:'booster', target:76, icon:'⬆️'},
-    49: {type:'booster', target:88, icon:'⬆️'},
-    98: {type:'hazard', target:54, icon:'☠️'},
-    80: {type:'hazard', target:38, icon:'☠️'},
-    55: {type:'hazard', target:12, icon:'☠️'},
-    32: {type:'hazard', target:2, icon:'☠️'},
-    20: {type:'skip', icon:'🛑'},
-    70: {type:'skip', icon:'🛑'},
-    40: {type:'double', icon:'🎲'},
-    90: {type:'double', icon:'🎲'}
+  4:{type:'booster',target:35},13:{type:'booster',target:45},27:{type:'booster',target:76},49:{type:'booster',target:88},
+  32:{type:'hazard',target:2},55:{type:'hazard',target:12},80:{type:'hazard',target:38},98:{type:'hazard',target:54},
+  20:{type:'skip'},70:{type:'skip'},40:{type:'double'},90:{type:'double'}
 };
 
 let gameState = {
-    playerPositions: {red:1, blue:1},
-    currentPlayer:'red',
+    players:{},
+    currentPlayer:"",
     lastRoll:0,
-    roomCode:'DELUXE',
-    skipTurn:{red:false, blue:false},
-    sound:true
+    status:"ongoing",
+    roomCode:""
 };
 
-// --- SOUND EFFECTS ---
-const sounds = {
-    booster: new Audio('https://www.myinstants.com/media/sounds/bling.mp3'),
-    hazard: new Audio('https://www.myinstants.com/media/sounds/fail-trombone.mp3'),
-    win: new Audio('https://www.myinstants.com/media/sounds/vine-boom.mp3'),
-    dice: new Audio('https://www.myinstants.com/media/sounds/dice-roll.mp3')
+const DOM = {
+    board: document.getElementById('game-board'),
+    message: document.getElementById('game-message'),
+    rollButton: document.getElementById('roll-button'),
+    currentPlayerDisplay: document.getElementById('current-player-display'),
+    playersPositions: document.getElementById('players-positions'),
+    dice: document.getElementById('dice-display')
 };
 
-// --- UTILITY FUNCTIONS ---
-function generateRoomCode(){
-    const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code='';
-    for(let i=0;i<6;i++){ code+=chars.charAt(Math.floor(Math.random()*chars.length)); }
-    gameState.roomCode=code;
-    DOM.roomCode.textContent=code;
-}
+let tokens = {}; // token DOM elements
 
-function getCoords(square){
-    const row=Math.floor((square-1)/10);
-    let col=(square-1)%10;
-    const actualRow=9-row;
-    if(actualRow%2!==0) col=9-col;
-    return {row:actualRow, col};
+function getCoords(squareNum){
+    const row = Math.floor((squareNum-1)/10);
+    let col = (squareNum-1)%10;
+    const actualRow = 9-row;
+    if(actualRow%2!==0) col = 9-col;
+    return {row:actualRow, col:col};
 }
 
 function renderBoard(){
-    DOM.board.innerHTML='';
+    DOM.board.innerHTML="";
     for(let i=1;i<=BOARD_SIZE;i++){
-        const sq=document.createElement('div');
-        sq.className='square';
+        const sq = document.createElement('div');
+        sq.className="square";
         sq.textContent=i;
-        sq.dataset.number=i;
+        if(SPECIAL_SQUARES[i]) sq.classList.add(SPECIAL_SQUARES[i].type);
         const coords=getCoords(i);
         sq.style.gridRowStart=coords.row+1;
         sq.style.gridColumnStart=coords.col+1;
-        if(i===BOARD_SIZE) sq.classList.add('finish');
-        if(SPECIAL_SQUARES[i]){
-            sq.classList.add(SPECIAL_SQUARES[i].type);
-            const icon=document.createElement('span');
-            icon.textContent=SPECIAL_SQUARES[i].icon;
-            icon.style.fontSize='1.2em';
-            sq.appendChild(icon);
-        }
         DOM.board.appendChild(sq);
     }
-    DOM.board.appendChild(DOM.tokenRed);
-    DOM.board.appendChild(DOM.tokenBlue);
+    for(const p in tokens) DOM.board.appendChild(tokens[p]);
 }
 
-function updateTokenPosition(player,pos){
-    const token=player==='red'?DOM.tokenRed:DOM.tokenBlue;
-    const coords=getCoords(pos);
-    token.style.transform=`translate(${coords.col*100}%, ${coords.row*100}%)`;
-}
-
-function updateDisplay(){
-    DOM.currentPlayerDisplay.textContent=gameState.currentPlayer.toUpperCase();
-    DOM.posRed.textContent=gameState.playerPositions.red;
-    DOM.posBlue.textContent=gameState.playerPositions.blue;
-    updateTokenPosition('red', gameState.playerPositions.red);
-    updateTokenPosition('blue', gameState.playerPositions.blue);
-    DOM.status.className = `active-${gameState.currentPlayer}`;
-}
-
-// --- GAME LOGIC ---
-function movePlayer(player, diceRoll){
-    let newPos=gameState.playerPositions[player]+diceRoll;
-    let message=`${player.toUpperCase()} rolled ${diceRoll}. Moving to ${newPos}.`;
-    let bonus=false;
-    if(newPos>BOARD_SIZE){
-        message=`${player.toUpperCase()} must roll ${BOARD_SIZE-gameState.playerPositions[player]} to win!`;
-        DOM.message.textContent=message;
-        return bonus;
+function updateTokens(){
+    for(const p in gameState.players){
+        const token=tokens[p];
+        const pos=gameState.players[p].position;
+        const coords=getCoords(pos);
+        token.style.transform=`translate(${coords.col*10}%,${coords.row*10}%)`;
     }
-    gameState.playerPositions[player]=newPos;
-    updateTokenPosition(player,newPos);
+    DOM.playersPositions.textContent=Object.entries(gameState.players).map(([k,v])=>`${v.name}: ${v.position}`).join(" | ");
+    DOM.currentPlayerDisplay.textContent=gameState.currentPlayer;
+}
+
+function rollDice(){
+    if(gameState.status!=="ongoing") return;
+    const roll=Math.floor(Math.random()*6)+1;
+    DOM.dice.textContent=roll;
+    movePlayer(gameState.currentPlayer, roll);
+}
+
+function movePlayer(player, roll){
+    let newPos=gameState.players[player].position+roll;
+    if(newPos>BOARD_SIZE) newPos=gameState.players[player].position;
+    gameState.players[player].position=newPos;
 
     if(SPECIAL_SQUARES[newPos]){
         const sq=SPECIAL_SQUARES[newPos];
-        switch(sq.type){
-            case 'booster': gameState.playerPositions[player]=sq.target; message+=` BOOSTER! Jump to ${sq.target}`; if(gameState.sound)sounds.booster.play(); break;
-            case 'hazard': gameState.playerPositions[player]=sq.target; message+=` HAZARD! Slide to ${sq.target}`; if(gameState.sound)sounds.hazard.play(); break;
-            case 'skip': gameState.skipTurn[player]=true; message+=' SKIP! Lose next turn.'; break;
-            case 'double': bonus=true; message+=' DOUBLE! Roll again!'; break;
-        }
+        if(sq.type==='booster') gameState.players[player].position=sq.target;
+        else if(sq.type==='hazard') gameState.players[player].position=sq.target;
+        else if(sq.type==='skip') gameState.players[player].skip=true;
+        else if(sq.type==='double') gameState.players[player].double=true;
     }
 
-    if(gameState.playerPositions[player]===BOARD_SIZE){
-        message=`🎉 ${player.toUpperCase()} WINS!`;
-        DOM.rollButton.disabled=true;
-        if(gameState.sound)sounds.win.play();
+    if(gameState.players[player].position===BOARD_SIZE){
+        gameState.status="finished";
+        DOM.message.textContent=`🎉 ${gameState.players[player].name} WINS!`;
     }
 
-    DOM.message.textContent=message;
-    return bonus;
-}
+    updateTokens();
+    saveGameState();
 
-function handleRoll(){
-    if(DOM.rollButton.disabled) return;
-    const player=gameState.currentPlayer;
-    if(gameState.skipTurn[player]){
-        DOM.message.textContent=`${player.toUpperCase()} skipping turn!`;
-        gameState.skipTurn[player]=false;
-        switchTurn();
+    if(gameState.players[player].double){
+        gameState.players[player].double=false;
+        DOM.message.textContent=`${gameState.players[player].name} rolled double square! Roll again.`;
         return;
     }
-    const roll=Math.floor(Math.random()*6)+1;
-    gameState.lastRoll=roll;
-    DOM.roll.textContent=roll;
-    if(gameState.sound)sounds.dice.play();
-    DOM.rollButton.disabled=true;
-    setTimeout(()=>{
-        const bonus=movePlayer(player,roll);
-        if(bonus) DOM.rollButton.disabled=false;
-        else if(gameState.playerPositions[player]!==BOARD_SIZE) switchTurn();
-    },700);
+
+    nextTurn();
 }
 
-function switchTurn(){
-    gameState.currentPlayer=gameState.currentPlayer==='red'?'blue':'red';
-    DOM.rollButton.disabled=false;
-    updateDisplay();
-    DOM.message.textContent=`${gameState.currentPlayer.toUpperCase()}'s turn. Roll the dice!`;
-}
+function nextTurn(){
+    const keys=Object.keys(gameState.players);
+    let idx=keys.indexOf(gameState.currentPlayer);
+    do{
+        idx=(idx+1)%keys.length;
+        gameState.currentPlayer=keys[idx];
+    }while(gameState.players[gameState.currentPlayer].skip && (gameState.players[gameState.currentPlayer].skip=false));
+    
+    updateTokens();
 
-function saveGame(){
-    localStorage.setItem('snakesBoostersSave',JSON.stringify(gameState));
-    DOM.message.textContent=`Game saved! Code: ${gameState.roomCode}`;
-}
-
-function loadGame(){
-    const saved=localStorage.getItem('snakesBoostersSave');
-    if(saved){
-        gameState=JSON.parse(saved);
-        DOM.message.textContent=`Game loaded! ${gameState.currentPlayer.toUpperCase()}'s turn.`;
-    } else {
-        generateRoomCode();
-        DOM.message.textContent='Welcome! Roll to start!';
-        DOM.modal.style.display='flex';
+    if(gameState.players[gameState.currentPlayer].isAI){
+        DOM.message.textContent=`AI ${gameState.players[gameState.currentPlayer].name} is rolling...`;
+        setTimeout(()=>rollDice(), 800);
+    }else{
+        DOM.message.textContent=`${gameState.players[gameState.currentPlayer].name}'s turn. Roll the dice!`;
+        DOM.rollButton.disabled=false;
     }
-    renderBoard();
-    updateDisplay();
 }
 
-function resetGame(){
-    gameState={playerPositions:{red:1,blue:1},currentPlayer:'red',lastRoll:0,roomCode:'DELUXE',skipTurn:{red:false,blue:false},sound:gameState.sound};
-    DOM.rollButton.disabled=false;
-    DOM.currentPlayerDisplay.textContent='RED';
-    DOM.roll.textContent='?';
-    updateDisplay();
-    DOM.message.textContent='Game reset! Roll to start.';
+function saveGameState(){
+    if(gameState.roomCode){
+        set(ref(db,'rooms/'+gameState.roomCode), gameState);
+    }
 }
 
-// --- SOUND TOGGLE ---
-DOM.soundToggle.addEventListener('click',()=>{
-    gameState.sound=!gameState.sound;
-    DOM.soundToggle.textContent=`Sound: ${gameState.sound?'ON 🔊':'OFF 🔇'}`;
+function loadGameState(roomCode){
+    const roomRef=ref(db,'rooms/'+roomCode);
+    onValue(roomRef,(snap)=>{
+        const data=snap.val();
+        if(data){
+            gameState=data;
+            for(const p in gameState.players){
+                if(!tokens[p]){
+                    const token=document.createElement('div');
+                    token.className='token';
+                    token.textContent=p[0];
+                    token.style.backgroundColor=p.toLowerCase();
+                    tokens[p]=token;
+                }
+            }
+            renderBoard();
+            updateTokens();
+        }
+    });
+}
+
+document.getElementById('roll-button').addEventListener('click', ()=>{
+    DOM.rollButton.disabled=true;
+    rollDice();
 });
 
-// --- EVENTS ---
-DOM.rollButton.addEventListener('click',handleRoll);
-DOM.resetButton.addEventListener('click',resetGame);
-document.getElementById('save-button').addEventListener('click',saveGame);
-document.addEventListener('DOMContentLoaded', loadGame);
-window.onclick = (e)=>{if(e.target==DOM.modal) DOM.modal.style.display='none';}
+// --- Game Mode Functions ---
+function startSinglePlayer(){
+    document.getElementById('mode-selection').style.display='none';
+    setupGame({RED:{position:1,isAI:false,name:"You"},BLUE:{position:1,isAI:true,name:"AI"}})
+}
+
+function startMultiplayer(){
+    document.getElementById('mode-selection').style.display='none';
+    document.getElementById('online-room').style.display='block';
+}
+
+function createRoom(){
+    const code=Math.random().toString(36).substring(2,8).toUpperCase();
+    const players={RED:{position:1,isAI:false,name:"You"}};
+    gameState={players:players,currentPlayer:"RED",lastRoll:0,status:"ongoing",roomCode:code};
+    document.getElementById('room-display').textContent=code;
+    loadGameState(code);
+    document.getElementById('online-room').style.display='none';
+    document.getElementById('player-status').style.display='block';
+    document.getElementById('action-area').style.display='block';
+    for(const p in players){
+        const token=document.createElement('div');
+        token.className='token';
+        token.textContent=p[0];
+        token.style.backgroundColor=p.toLowerCase();
+        tokens[p]=token;
+    }
+    renderBoard();
+    updateTokens();
+    saveGameState();
+}
+
+function joinRoom(){
+    const code=document.getElementById('room-code-input').value.toUpperCase();
+    if(!code) return;
+    loadGameState(code);
+    gameState.roomCode=code;
+    document.getElementById('online-room').style.display='none';
+    document.getElementById('player-status').style.display='block';
+    document.getElementById('action-area').style.display='block';
+}
+  
+function setupGame(players){
+    gameState={players:players,currentPlayer:Object.keys(players)[0],lastRoll:0,status:"ongoing",roomCode:""};
+    document.getElementById('player-status').style.display='block';
+    document.getElementById('action-area').style.display='block';
+    for(const p in players){
+        const token=document.createElement('div');
+        token.className='token';
+        token.textContent=p[0];
+        token.style.backgroundColor=p.toLowerCase();
+        tokens[p]=token;
+    }
+    renderBoard();
+    updateTokens();
+
+    if(gameState.players[gameState.currentPlayer].isAI){
+        DOM.message.textContent=`AI ${gameState.players[gameState.currentPlayer].name} is rolling...`;
+        setTimeout(()=>rollDice(), 800);
+    }
+}
 </script>
+
 </body>
-    </html>
+</html>
