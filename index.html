@@ -1,500 +1,460 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐍 Snakes & Boosters Race</title>
-    
-    <style>
-        /* BASE & TYPOGRAPHY */
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #fce4ec; /* Light Pink Background */
-            color: #311b92; /* Deep Purple Text */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 0;
-            padding: 10px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐍 Snakes & Boosters Race Deluxe</title>
+<style>
+/* ===== BASE & TYPOGRAPHY ===== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    margin: 0;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #333;
+}
 
-        header h1 {
-            color: #d81b60; /* Pinkish Red */
-            text-shadow: 2px 2px #f8bbd0;
-            font-size: 1.8em;
-            margin-bottom: 10px;
-        }
+header h1 {
+    font-size: 2em;
+    color: #fff;
+    text-shadow: 2px 2px #ff4081;
+    margin-bottom: 10px;
+    text-align: center;
+}
 
-        /* LAYOUT (MOBILE FIRST) */
-        #game-container {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background: white;
-            padding: 15px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-        }
+/* ===== GAME CONTAINER ===== */
+#game-container {
+    width: 100%;
+    max-width: 600px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
 
-        /* GAME BOARD (10x10 Grid) */
-        #game-board {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            grid-template-rows: repeat(10, 1fr);
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            border: 4px solid #4a148c; /* Purple Border */
-            background-color: #f3e5f5; /* Very Light Purple */
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-        }
+/* ===== PLAYER STATUS ===== */
+#player-status {
+    background: #f3e5f5;
+    padding: 12px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    text-align: center;
+    transition: all 0.3s;
+}
+#player-status.active-red { border: 3px solid #e53935; }
+#player-status.active-blue { border: 3px solid #1e88e5; }
 
-        .square {
-            border: 1px solid #ce93d8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.8em;
-            position: relative;
-            font-weight: bold;
-        }
+/* ===== GAME BOARD ===== */
+#game-board {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    width: 100%;
+    aspect-ratio: 1/1;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.2);
+    margin-bottom: 15px;
+}
 
-        /* Special Squares Styling */
-        .booster { background-color: #a5d6a7; color: green; } /* Green Arrow */
-        .hazard { background-color: #ef9a9a; color: red; } /* Red Skull */
-        .skip { background-color: #fff59d; color: orange; } /* Yellow Stop */
-        .double { background-color: #90caf9; color: blue; } /* Blue Dice */
-        .finish { background-color: #81c784; color: white; font-size: 1.2em;}
+.square {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 0.8em;
+    border: 1px solid #ccc;
+    position: relative;
+    transition: all 0.3s ease;
+}
+.square.finish {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(45deg, #4caf50, #81c784);
+}
 
-        /* Player Tokens */
-        .token {
-            position: absolute;
-            width: 50%;
-            height: 50%;
-            border-radius: 50%;
-            z-index: 10;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2em;
-            color: white;
-            font-weight: bold;
-            transition: all 0.5s ease-in-out; /* Smooth movement */
-        }
-        .token-red { background-color: #e53935; top: 0; left: 0; }
-        .token-blue { background-color: #1e88e5; bottom: 0; right: 0; }
+/* Special Squares */
+.square.booster { background: linear-gradient(135deg, #a5d6a7, #66bb6a); color: green; }
+.square.hazard { background: linear-gradient(135deg, #ef9a9a, #e53935); color: white; }
+.square.skip { background: linear-gradient(135deg, #fff59d, #fbc02d); color: #333; }
+.square.double { background: linear-gradient(135deg, #90caf9, #42a5f5); color: white; }
 
-        /* Status & Hand */
-        #player-status {
-            background-color: #f3e5f5;
-            padding: 10px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
+/* ===== PLAYER TOKENS ===== */
+.token {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    border-radius: 50%;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: white;
+    font-size: 1.2em;
+    transition: transform 0.5s ease;
+}
+.token-red { background: #e53935; }
+.token-blue { background: #1e88e5; }
 
-        /* DICE & ACTIONS */
-        #dice-display {
-            font-size: 40px;
-            font-weight: bold;
-            border: 4px solid #ff4081; /* Pink Accent */
-            width: 60px;
-            height: 60px;
-            line-height: 60px;
-            margin: 10px auto;
-            border-radius: 8px;
-            background-color: white;
-        }
-        #roll-button {
-            width: 100%;
-            padding: 15px 10px;
-            font-size: 1.1em;
-            cursor: pointer;
-            background-color: #ff4081;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 0 #c51162; 
-            transition: all 0.1s;
-        }
-        #roll-button:active {
-            box-shadow: 0 2px 0 #c51162;
-            transform: translateY(2px);
-        }
-        
-        /* MESSAGE AREA */
-        #game-message {
-            font-weight: bold;
-            min-height: 20px;
-            margin-top: 5px;
-        }
+/* ===== DICE & ACTIONS ===== */
+#action-area {
+    text-align: center;
+    margin-bottom: 10px;
+}
+#dice-display {
+    font-size: 40px;
+    font-weight: bold;
+    margin: 10px auto;
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    border-radius: 15px;
+    background: linear-gradient(145deg, #fff, #f3e5f5);
+    border: 4px solid #ff4081;
+}
+#roll-button, #reset-button {
+    margin-top: 10px;
+    padding: 12px 20px;
+    font-size: 1em;
+    font-weight: bold;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    color: white;
+    background: #ff4081;
+    box-shadow: 0 4px 0 #c51162;
+    transition: all 0.1s;
+}
+#roll-button:active, #reset-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #c51162;
+}
 
-        /* MULTIPLAYER/STORAGE */
-        #online-area {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            text-align: center;
-            padding: 10px 0;
-            border-top: 2px dashed #e91e63;
-        }
-        #room-code-display {
-            font-size: 1.3em;
-            color: #00bcd4;
-            padding: 8px;
-            border: 2px dashed #00bcd4;
-            display: inline-block;
-            border-radius: 5px;
-            background-color: #e0f7fa;
-        }
-        .small-btn {
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-weight: bold;
-            width: 100%;
-        }
+/* ===== GAME MESSAGE ===== */
+#game-message {
+    font-weight: bold;
+    font-size: 1em;
+    min-height: 20px;
+    margin-top: 5px;
+}
 
-        /* INSTRUCTION MODAL */
-        .modal {
-            display: none; 
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.7);
-        }
-        .modal-content {
-            background-color: #fff;
-            margin: 10% auto;
-            padding: 20px;
-            border: 3px solid #ff4081;
-            width: 90%;
-            max-width: 400px;
-            border-radius: 15px;
-        }
-        .close-btn {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close-btn:hover, .close-btn:focus {
-            color: #f44336;
-            text-decoration: none;
-            cursor: pointer;
-        }
-    </style>
+/* ===== ONLINE AREA ===== */
+#online-area {
+    margin-top: 15px;
+    text-align: center;
+}
+#room-code-display {
+    font-size: 1.3em;
+    padding: 6px 10px;
+    border: 2px dashed #00bcd4;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 10px;
+    background-color: #e0f7fa;
+}
+
+/* ===== MODAL ===== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    background: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    max-width: 400px;
+    width: 90%;
+    text-align: left;
+    border: 3px solid #ff4081;
+}
+.close-btn {
+    float: right;
+    font-size: 28px;
+    cursor: pointer;
+    color: #aaa;
+}
+.close-btn:hover { color: #f44336; }
+
+/* ===== SOUND EFFECT BUTTON ===== */
+#sound-toggle {
+    margin-top: 10px;
+    padding: 6px 10px;
+    font-size: 0.9em;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background: #ff9800;
+    color: #fff;
+}
+</style>
 </head>
 <body>
 
-    <header>
-        <h1>🐍 Snakes & Boosters ⬆️⬇️</h1>
-    </header>
+<header>
+    <h1>🐍 Snakes & Boosters Deluxe 🚀</h1>
+</header>
 
-    <div id="game-container">
-        
-        <div id="player-status">
-            <h2>Current Turn: <span id="current-player-display">Player RED</span></h2>
-            <p>RED Position: <span id="pos-red">1</span> | BLUE Position: <span id="pos-blue">1</span></p>
-            <p id="game-message">Roll the dice to start the race!</p>
-        </div>
-        
-        <div id="game-board">
-            <div class="token token-red" data-player="red" style="transform: translate(0%, 0%);">R</div>
-            <div class="token token-blue" data-player="blue" style="transform: translate(0%, 0%);">B</div>
-        </div>
-
-        <div id="action-area">
-            <div id="dice-display">
-                <span id="current-roll">?</span>
-            </div>
-            <button id="roll-button">ROLL DICE</button>
-        </div>
-
-        <div id="online-area">
-            <p>Room Code: <div id="room-code-display">ABCDEF</div></p>
-            <button id="save-button" class="small-btn" style="background-color: #00bcd4; color: white;">Save Game</button>
-            <button onclick="document.getElementById('instructions-modal').style.display='block'" 
-                    class="small-btn" style="background-color: #795548; color: white;">Show Instructions</button>
-        </div>
-
+<div id="game-container">
+    <div id="player-status" class="active-red">
+        <h2>Current Turn: <span id="current-player-display">RED</span></h2>
+        <p>RED: <span id="pos-red">1</span> | BLUE: <span id="pos-blue">1</span></p>
+        <p id="game-message">Roll the dice to start!</p>
     </div>
 
-    <div id="instructions-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="document.getElementById('instructions-modal').style.display='none'">&times;</span>
-            <h2>Game Rules 🐍</h2>
-            <hr>
-            <p><strong>Goal:</strong> Be the first player to land exactly on **Square 100**.</p>
-            
-            <h3>Special Squares:</h3>
-            <ul>
-                <li>🟢 **Booster:** Land on the start of a Booster, and you **move up** to the target square.</li>
-                <li>🔴 **Hazard:** Land on a Hazard head, and you **slide down** to the target square.</li>
-                <li>🟡 **Skip:** Land exactly here, and you **lose your next turn**.</li>
-                <li>🔵 **Double:** Land exactly here, and you get to **roll again** immediately.</li>
-            </ul>
-        </div>
+    <div id="game-board">
+        <div class="token token-red" data-player="red">R</div>
+        <div class="token token-blue" data-player="blue">B</div>
     </div>
 
-    <script>
-        const DOM = {
-            board: document.getElementById('game-board'),
-            roll: document.getElementById('current-roll'),
-            message: document.getElementById('game-message'),
-            rollButton: document.getElementById('roll-button'),
-            currentPlayerDisplay: document.getElementById('current-player-display'),
-            posRed: document.getElementById('pos-red'),
-            posBlue: document.getElementById('pos-blue'),
-            tokenRed: document.querySelector('.token-red'),
-            tokenBlue: document.querySelector('.token-blue'),
-            roomCode: document.getElementById('room-code-display'),
-            modal: document.getElementById('instructions-modal')
-        };
+    <div id="action-area">
+        <div id="dice-display"><span id="current-roll">?</span></div>
+        <button id="roll-button">ROLL DICE 🎲</button>
+        <button id="reset-button">RESET GAME 🔄</button>
+        <button id="sound-toggle">Sound: ON 🔊</button>
+    </div>
 
-        // Configuration of the 10x10 board path and special squares
-        const BOARD_SIZE = 100;
-        const SPECIAL_SQUARES = {
-            // Booster: [Start, Target]
-            4: {type: 'booster', target: 35, icon: '⬆️'}, 
-            13: {type: 'booster', target: 45, icon: '⬆️'},
-            27: {type: 'booster', target: 76, icon: '⬆️'},
-            49: {type: 'booster', target: 88, icon: '⬆️'},
-            // Hazard: [Head, Tail]
-            98: {type: 'hazard', target: 54, icon: '☠️'}, 
-            80: {type: 'hazard', target: 38, icon: '☠️'},
-            55: {type: 'hazard', target: 12, icon: '☠️'},
-            32: {type: 'hazard', target: 2, icon: '☠️'},
-            // Skip & Double Squares
-            20: {type: 'skip', icon: '🛑'},
-            70: {type: 'skip', icon: '🛑'},
-            40: {type: 'double', icon: '🎲'},
-            90: {type: 'double', icon: '🎲'}
-        };
+    <div id="online-area">
+        <p>Room Code: <span id="room-code-display">ABC123</span></p>
+        <button id="save-button" style="background:#00bcd4;color:white;border-radius:8px;padding:10px 15px;">Save Game</button>
+        <button onclick="document.getElementById('instructions-modal').style.display='flex'" style="background:#795548;color:white;border-radius:8px;padding:10px 15px;">Instructions</button>
+    </div>
+</div>
 
-        // --- GAME STATE ---
-        let gameState = {
-            playerPositions: { 'red': 1, 'blue': 1 },
-            currentPlayer: 'red',
-            lastRoll: 0,
-            roomCode: 'SINGLE',
-            skipTurn: { 'red': false, 'blue': false }
-        };
+<div id="instructions-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="document.getElementById('instructions-modal').style.display='none'">&times;</span>
+        <h2>Game Rules 🐍</h2>
+        <hr>
+        <p><strong>Goal:</strong> Reach exactly Square 100 first!</p>
+        <ul>
+            <li>🟢 Booster: Move up to target square.</li>
+            <li>🔴 Hazard: Slide down to target square.</li>
+            <li>🟡 Skip: Lose next turn.</li>
+            <li>🔵 Double: Roll again immediately.</li>
+        </ul>
+    </div>
+</div>
 
-        // --- Utility Functions ---
+<script>
+const DOM = {
+    board: document.getElementById('game-board'),
+    roll: document.getElementById('current-roll'),
+    message: document.getElementById('game-message'),
+    rollButton: document.getElementById('roll-button'),
+    resetButton: document.getElementById('reset-button'),
+    currentPlayerDisplay: document.getElementById('current-player-display'),
+    posRed: document.getElementById('pos-red'),
+    posBlue: document.getElementById('pos-blue'),
+    tokenRed: document.querySelector('.token-red'),
+    tokenBlue: document.querySelector('.token-blue'),
+    roomCode: document.getElementById('room-code-display'),
+    modal: document.getElementById('instructions-modal'),
+    status: document.getElementById('player-status'),
+    soundToggle: document.getElementById('sound-toggle')
+};
 
-        function generateRoomCode() {
-            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let code = '';
-            for (let i = 0; i < 6; i++) {
-                code += characters.charAt(Math.floor(Math.random() * characters.length));
-            }
-            gameState.roomCode = code;
-            DOM.roomCode.textContent = code;
+const BOARD_SIZE = 100;
+const SPECIAL_SQUARES = {
+    4: {type:'booster', target:35, icon:'⬆️'},
+    13: {type:'booster', target:45, icon:'⬆️'},
+    27: {type:'booster', target:76, icon:'⬆️'},
+    49: {type:'booster', target:88, icon:'⬆️'},
+    98: {type:'hazard', target:54, icon:'☠️'},
+    80: {type:'hazard', target:38, icon:'☠️'},
+    55: {type:'hazard', target:12, icon:'☠️'},
+    32: {type:'hazard', target:2, icon:'☠️'},
+    20: {type:'skip', icon:'🛑'},
+    70: {type:'skip', icon:'🛑'},
+    40: {type:'double', icon:'🎲'},
+    90: {type:'double', icon:'🎲'}
+};
+
+let gameState = {
+    playerPositions: {red:1, blue:1},
+    currentPlayer:'red',
+    lastRoll:0,
+    roomCode:'DELUXE',
+    skipTurn:{red:false, blue:false},
+    sound:true
+};
+
+// --- SOUND EFFECTS ---
+const sounds = {
+    booster: new Audio('https://www.myinstants.com/media/sounds/bling.mp3'),
+    hazard: new Audio('https://www.myinstants.com/media/sounds/fail-trombone.mp3'),
+    win: new Audio('https://www.myinstants.com/media/sounds/vine-boom.mp3'),
+    dice: new Audio('https://www.myinstants.com/media/sounds/dice-roll.mp3')
+};
+
+// --- UTILITY FUNCTIONS ---
+function generateRoomCode(){
+    const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code='';
+    for(let i=0;i<6;i++){ code+=chars.charAt(Math.floor(Math.random()*chars.length)); }
+    gameState.roomCode=code;
+    DOM.roomCode.textContent=code;
+}
+
+function getCoords(square){
+    const row=Math.floor((square-1)/10);
+    let col=(square-1)%10;
+    const actualRow=9-row;
+    if(actualRow%2!==0) col=9-col;
+    return {row:actualRow, col};
+}
+
+function renderBoard(){
+    DOM.board.innerHTML='';
+    for(let i=1;i<=BOARD_SIZE;i++){
+        const sq=document.createElement('div');
+        sq.className='square';
+        sq.textContent=i;
+        sq.dataset.number=i;
+        const coords=getCoords(i);
+        sq.style.gridRowStart=coords.row+1;
+        sq.style.gridColumnStart=coords.col+1;
+        if(i===BOARD_SIZE) sq.classList.add('finish');
+        if(SPECIAL_SQUARES[i]){
+            sq.classList.add(SPECIAL_SQUARES[i].type);
+            const icon=document.createElement('span');
+            icon.textContent=SPECIAL_SQUARES[i].icon;
+            icon.style.fontSize='1.2em';
+            sq.appendChild(icon);
         }
+        DOM.board.appendChild(sq);
+    }
+    DOM.board.appendChild(DOM.tokenRed);
+    DOM.board.appendChild(DOM.tokenBlue);
+}
 
-        // Calculates the coordinates (row, col) from the square number (1-100)
-        function getCoords(squareNum) {
-            const row = Math.floor((squareNum - 1) / 10);
-            let col = (squareNum - 1) % 10;
-            
-            // Snake pattern: odd rows (from bottom: 0, 2, 4...) go left-to-right (col 0-9)
-            // even rows (from bottom: 1, 3, 5...) go right-to-left (col 9-0)
-            const actualRow = 9 - row; // 9 is bottom row, 0 is top row
-            
-            if (actualRow % 2 !== 0) {
-                col = 9 - col;
-            }
-            
-            return { row: actualRow, col: col };
+function updateTokenPosition(player,pos){
+    const token=player==='red'?DOM.tokenRed:DOM.tokenBlue;
+    const coords=getCoords(pos);
+    token.style.transform=`translate(${coords.col*100}%, ${coords.row*100}%)`;
+}
+
+function updateDisplay(){
+    DOM.currentPlayerDisplay.textContent=gameState.currentPlayer.toUpperCase();
+    DOM.posRed.textContent=gameState.playerPositions.red;
+    DOM.posBlue.textContent=gameState.playerPositions.blue;
+    updateTokenPosition('red', gameState.playerPositions.red);
+    updateTokenPosition('blue', gameState.playerPositions.blue);
+    DOM.status.className = `active-${gameState.currentPlayer}`;
+}
+
+// --- GAME LOGIC ---
+function movePlayer(player, diceRoll){
+    let newPos=gameState.playerPositions[player]+diceRoll;
+    let message=`${player.toUpperCase()} rolled ${diceRoll}. Moving to ${newPos}.`;
+    let bonus=false;
+    if(newPos>BOARD_SIZE){
+        message=`${player.toUpperCase()} must roll ${BOARD_SIZE-gameState.playerPositions[player]} to win!`;
+        DOM.message.textContent=message;
+        return bonus;
+    }
+    gameState.playerPositions[player]=newPos;
+    updateTokenPosition(player,newPos);
+
+    if(SPECIAL_SQUARES[newPos]){
+        const sq=SPECIAL_SQUARES[newPos];
+        switch(sq.type){
+            case 'booster': gameState.playerPositions[player]=sq.target; message+=` BOOSTER! Jump to ${sq.target}`; if(gameState.sound)sounds.booster.play(); break;
+            case 'hazard': gameState.playerPositions[player]=sq.target; message+=` HAZARD! Slide to ${sq.target}`; if(gameState.sound)sounds.hazard.play(); break;
+            case 'skip': gameState.skipTurn[player]=true; message+=' SKIP! Lose next turn.'; break;
+            case 'double': bonus=true; message+=' DOUBLE! Roll again!'; break;
         }
+    }
 
-        function renderBoard() {
-            DOM.board.innerHTML = '';
-            
-            // Create all 100 squares
-            for (let i = 1; i <= BOARD_SIZE; i++) {
-                const square = document.createElement('div');
-                square.className = 'square';
-                square.textContent = i;
-                square.dataset.number = i;
+    if(gameState.playerPositions[player]===BOARD_SIZE){
+        message=`🎉 ${player.toUpperCase()} WINS!`;
+        DOM.rollButton.disabled=true;
+        if(gameState.sound)sounds.win.play();
+    }
 
-                if (i === BOARD_SIZE) square.classList.add('finish');
+    DOM.message.textContent=message;
+    return bonus;
+}
 
-                const coords = getCoords(i);
-                square.style.gridRowStart = coords.row + 1;
-                square.style.gridColumnStart = coords.col + 1;
-                
-                // Add special element styling and icon
-                if (SPECIAL_SQUARES[i]) {
-                    square.classList.add(SPECIAL_SQUARES[i].type);
-                    const icon = document.createElement('span');
-                    icon.textContent = SPECIAL_SQUARES[i].icon;
-                    icon.style.fontSize = '1.2em';
-                    square.appendChild(icon);
-                }
+function handleRoll(){
+    if(DOM.rollButton.disabled) return;
+    const player=gameState.currentPlayer;
+    if(gameState.skipTurn[player]){
+        DOM.message.textContent=`${player.toUpperCase()} skipping turn!`;
+        gameState.skipTurn[player]=false;
+        switchTurn();
+        return;
+    }
+    const roll=Math.floor(Math.random()*6)+1;
+    gameState.lastRoll=roll;
+    DOM.roll.textContent=roll;
+    if(gameState.sound)sounds.dice.play();
+    DOM.rollButton.disabled=true;
+    setTimeout(()=>{
+        const bonus=movePlayer(player,roll);
+        if(bonus) DOM.rollButton.disabled=false;
+        else if(gameState.playerPositions[player]!==BOARD_SIZE) switchTurn();
+    },700);
+}
 
-                DOM.board.appendChild(square);
-            }
-            
-            // Re-append tokens so they are on top
-            DOM.board.appendChild(DOM.tokenRed);
-            DOM.board.appendChild(DOM.tokenBlue);
-        }
+function switchTurn(){
+    gameState.currentPlayer=gameState.currentPlayer==='red'?'blue':'red';
+    DOM.rollButton.disabled=false;
+    updateDisplay();
+    DOM.message.textContent=`${gameState.currentPlayer.toUpperCase()}'s turn. Roll the dice!`;
+}
 
-        function updateTokenPosition(player, position) {
-            const token = player === 'red' ? DOM.tokenRed : DOM.tokenBlue;
-            const coords = getCoords(position);
-            
-            // Adjust coordinates for the board grid (1-based index)
-            const rowStart = coords.row + 1;
-            const colStart = coords.col + 1;
+function saveGame(){
+    localStorage.setItem('snakesBoostersSave',JSON.stringify(gameState));
+    DOM.message.textContent=`Game saved! Code: ${gameState.roomCode}`;
+}
 
-            token.style.gridRowStart = rowStart;
-            token.style.gridColumnStart = colStart;
-        }
+function loadGame(){
+    const saved=localStorage.getItem('snakesBoostersSave');
+    if(saved){
+        gameState=JSON.parse(saved);
+        DOM.message.textContent=`Game loaded! ${gameState.currentPlayer.toUpperCase()}'s turn.`;
+    } else {
+        generateRoomCode();
+        DOM.message.textContent='Welcome! Roll to start!';
+        DOM.modal.style.display='flex';
+    }
+    renderBoard();
+    updateDisplay();
+}
 
-        function updateDisplay() {
-            DOM.currentPlayerDisplay.textContent = gameState.currentPlayer.toUpperCase();
-            DOM.posRed.textContent = gameState.playerPositions.red;
-            DOM.posBlue.textContent = gameState.playerPositions.blue;
+function resetGame(){
+    gameState={playerPositions:{red:1,blue:1},currentPlayer:'red',lastRoll:0,roomCode:'DELUXE',skipTurn:{red:false,blue:false},sound:gameState.sound};
+    DOM.rollButton.disabled=false;
+    DOM.currentPlayerDisplay.textContent='RED';
+    DOM.roll.textContent='?';
+    updateDisplay();
+    DOM.message.textContent='Game reset! Roll to start.';
+}
 
-            updateTokenPosition('red', gameState.playerPositions.red);
-            updateTokenPosition('blue', gameState.playerPositions.blue);
-        }
+// --- SOUND TOGGLE ---
+DOM.soundToggle.addEventListener('click',()=>{
+    gameState.sound=!gameState.sound;
+    DOM.soundToggle.textContent=`Sound: ${gameState.sound?'ON 🔊':'OFF 🔇'}`;
+});
 
-        // --- Core Game Logic ---
-
-        function movePlayer(player, diceRoll) {
-            let newPos = gameState.playerPositions[player] + diceRoll;
-            let message = `${player.toUpperCase()} rolled a ${diceRoll}. Moving to square ${newPos}.`;
-            let bonusRoll = false;
-            
-            // 1. Check for overshoot (Must land EXACTLY on 100)
-            if (newPos > BOARD_SIZE) {
-                newPos = gameState.playerPositions[player]; // Stay put
-                message = `${player.toUpperCase()} needs to roll a ${BOARD_SIZE - gameState.playerPositions[player]} to win! Staying at ${newPos}.`;
-                gameState.playerPositions[player] = newPos;
-                DOM.message.textContent = message;
-                return bonusRoll;
-            }
-
-            // 2. Update position
-            gameState.playerPositions[player] = newPos;
-            updateTokenPosition(player, newPos);
-
-            // 3. Check for special squares
-            if (SPECIAL_SQUARES[newPos]) {
-                const square = SPECIAL_SQUARES[newPos];
-                
-                switch (square.type) {
-                    case 'booster':
-                        gameState.playerPositions[player] = square.target;
-                        message += ` WOW! Hit a **BOOSTER** and shot up to ${square.target}!`;
-                        break;
-                    case 'hazard':
-                        gameState.playerPositions[player] = square.target;
-                        message += ` OH NO! Hit a **HAZARD** and slid back to ${square.target}!`;
-                        break;
-                    case 'skip':
-                        gameState.skipTurn[player] = true;
-                        message += ` WHOOPS! Hit a **SKIP** square. You lose your next turn.`;
-                        break;
-                    case 'double':
-                        bonusRoll = true;
-                        message += ` YES! Hit a **DOUBLE** square. You get to roll again!`;
-                        break;
-                }
-            }
-            
-            // 4. Check for Win
-            if (newPos === BOARD_SIZE) {
-                message = `🎉 **${player.toUpperCase()} WINS!** You reached Square 100!`;
-                DOM.rollButton.disabled = true;
-            }
-
-            DOM.message.textContent = message;
-            return bonusRoll;
-        }
-
-        function handleRoll() {
-            if (DOM.rollButton.disabled) return;
-
-            const player = gameState.currentPlayer;
-            
-            // Check for skip turn
-            if (gameState.skipTurn[player]) {
-                DOM.message.textContent = `${player.toUpperCase()} is skipping their turn (Skip Square penalty).`;
-                gameState.skipTurn[player] = false; // Penalty consumed
-                switchTurn();
-                return;
-            }
-
-            const roll = Math.floor(Math.random() * 6) + 1;
-            gameState.lastRoll = roll;
-            DOM.roll.textContent = roll;
-            DOM.rollButton.disabled = true;
-            
-            // Slight delay before movement for visual effect
-            setTimeout(() => {
-                const bonusRoll = movePlayer(player, roll);
-                
-                if (bonusRoll) {
-                    DOM.rollButton.disabled = false; // Keep the same player active
-                } else if (gameState.playerPositions[player] !== BOARD_SIZE) {
-                    switchTurn();
-                }
-
-            }, 700);
-        }
-
-        function switchTurn() {
-            gameState.currentPlayer = gameState.currentPlayer === 'red' ? 'blue' : 'red';
-            DOM.rollButton.disabled = false;
-            DOM.message.textContent = `It's ${gameState.currentPlayer.toUpperCase()}'s turn. Roll the dice!`;
-            updateDisplay();
-        }
-
-        // --- Local Storage Functions ---
-
-        function saveGame() {
-            localStorage.setItem('snakesBoostersSave', JSON.stringify(gameState));
-            DOM.message.textContent = `Game state SAVED! Code: ${gameState.roomCode}`;
-        }
-
-        function loadGame() {
-            const savedState = localStorage.getItem('snakesBoostersSave');
-            if (savedState) {
-                gameState = JSON.parse(savedState);
-                DOM.message.textContent = `Game LOADED! It is ${gameState.currentPlayer.toUpperCase()}'s turn.`;
-            } else {
-                generateRoomCode();
-                DOM.message.textContent = "Welcome! Roll to start the race!";
-                DOM.modal.style.display='block';
-            }
-            
-            renderBoard();
-            updateDisplay();
-        }
-
-        // --- Event Listeners ---
-        DOM.rollButton.addEventListener('click', handleRoll);
-        document.getElementById('save-button').addEventListener('click', saveGame);
-        
-        // Initial load
-        document.addEventListener('DOMContentLoaded', loadGame);
-
-        // Close modal when clicking outside of it
-        window.onclick = function(event) {
-            if (event.target == DOM.modal) {
-                DOM.modal.style.display = "none";
-            }
-        }
-    </script>
+// --- EVENTS ---
+DOM.rollButton.addEventListener('click',handleRoll);
+DOM.resetButton.addEventListener('click',resetGame);
+document.getElementById('save-button').addEventListener('click',saveGame);
+document.addEventListener('DOMContentLoaded', loadGame);
+window.onclick = (e)=>{if(e.target==DOM.modal) DOM.modal.style.display='none';}
+</script>
 </body>
-</html>
+    </html>
