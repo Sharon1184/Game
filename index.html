@@ -1,301 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🐍 Snakes & Boosters Online</title>
-
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #fce4ec;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 0;
-  padding: 10px;
-}
-header h1 {
-  color: #d81b60;
-  text-shadow: 2px 2px #f8bbd0;
-}
-#game-container {
-  width: 100%;
-  max-width: 500px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: white;
-  padding: 15px;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-}
-#game-board {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  grid-template-rows: repeat(10, 1fr);
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border: 4px solid #4a148c;
-  background-color: #f3e5f5;
-  border-radius: 10px;
-  position: relative;
-}
-.square {
-  border: 1px solid #ce93d8;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.7em;
-  position: relative;
-  font-weight: bold;
-}
-.booster { background-color: #a5d6a7; color: green; }
-.hazard { background-color: #ef9a9a; color: red; }
-.skip { background-color: #fff59d; color: orange; }
-.double { background-color: #90caf9; color: blue; }
-.token {
-  position: absolute;
-  width: 8%;
-  height: 8%;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.7em;
-  color: white;
-  font-weight: bold;
-  transition: all 0.5s ease-in-out;
-}
-button {
-  padding: 10px 15px;
-  border-radius: 10px;
-  cursor: pointer;
-  margin-top: 5px;
-}
-#dice-display {
-  font-size: 2em;
-  width: 50px;
-  height: 50px;
-  margin: 0 auto;
-  line-height: 50px;
-  border: 3px solid #ff4081;
-  border-radius: 8px;
-  background: white;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .barcode-container {
+            margin-top: 30px;
+            text-align: center;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 5px;
+            display: none;
+        }
+        .barcode-container.active {
+            display: block;
+        }
+        #barcode {
+            margin: 20px 0;
+        }
+        .error {
+            color: #d32f2f;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        .error.active {
+            display: block;
+        }
+    </style>
 </head>
-
 <body>
-<header><h1>🐍 Snakes & Boosters Online</h1></header>
+    <div class="container">
+        <h1>📊 Barcode Generator</h1>
+        
+        <div class="input-group">
+            <label for="textInput">Enter text or numbers:</label>
+            <input type="text" id="textInput" placeholder="Type something..." value="HELLO123">
+        </div>
+        
+        <button onclick="generateBarcode()">Generate Barcode</button>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="barcode-container" id="barcodeContainer">
+            <svg id="barcode"></svg>
+            <button onclick="downloadBarcode()" style="margin-top: 20px; background: #2196F3;">Download as Image</button>
+        </div>
+    </div>
 
-<div id="game-container">
-  <div id="mode-selection">
-    <p>Select Mode:</p>
-    <button id="single-btn">Single Player vs AI</button>
-    <button id="multi-btn">Multiplayer Online</button>
-  </div>
-
-  <div id="online-room" style="display:none;">
-    <p>Enter Room Code: <input type="text" id="room-code-input" maxlength="6"></p>
-    <button id="join-room-btn">Join Room</button>
-    <button id="create-room-btn">Create Room</button>
-    <p>Your Room Code: <span id="room-display"></span></p>
-  </div>
-
-  <div id="player-status" style="display:none;">
-    <h2>Current Turn: <span id="current-player-display"></span></h2>
-    <p id="players-positions"></p>
-    <p id="game-message">Roll the dice to start!</p>
-  </div>
-
-  <div id="game-board"></div>
-
-  <div id="action-area" style="display:none;">
-    <div id="dice-display">?</div>
-    <button id="roll-button">ROLL DICE</button>
-  </div>
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
-import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDezuEzLaVrbFrYtFdHLjS-A-s-1yhduLY",
-  authDomain: "game-794ad.firebaseapp.com",
-  databaseURL: "https://game-794ad-default-rtdb.firebaseio.com/",
-  projectId: "game-794ad",
-  storageBucket: "game-794ad.appspot.com",
-  messagingSenderId: "804274377887",
-  appId: "1:804274377887:web:205f5ec40874f04b6c3eaa"
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// --- GAME LOGIC ---
-const BOARD_SIZE = 100;
-const SPECIAL_SQUARES = {
-  4:{type:'booster',target:35},
-  13:{type:'booster',target:45},
-  27:{type:'booster',target:76},
-  49:{type:'booster',target:88},
-  32:{type:'hazard',target:2},
-  55:{type:'hazard',target:12},
-  80:{type:'hazard',target:38},
-  98:{type:'hazard',target:54},
-};
-
-let gameState = { players:{}, currentPlayer:"", roomCode:"", status:"waiting" };
-let tokens = {};
-
-const board = document.getElementById('game-board');
-const msg = document.getElementById('game-message');
-const dice = document.getElementById('dice-display');
-const rollBtn = document.getElementById('roll-button');
-
-function getCoords(n){
-  const row = Math.floor((n-1)/10);
-  let col = (n-1)%10;
-  const r = 9-row;
-  if(r%2!==0) col = 9-col;
-  return { row:r, col:col };
-}
-
-function renderBoard(){
-  board.innerHTML="";
-  for(let i=1;i<=BOARD_SIZE;i++){
-    const sq=document.createElement('div');
-    sq.className="square";
-    sq.textContent=i;
-    if(SPECIAL_SQUARES[i]) sq.classList.add(SPECIAL_SQUARES[i].type);
-    board.appendChild(sq);
-  }
-  for(const p in tokens) board.appendChild(tokens[p]);
-}
-
-function updateTokens(){
-  for(const p in gameState.players){
-    const pos=gameState.players[p].position;
-    const coords=getCoords(pos);
-    const token=tokens[p];
-    token.style.transform=`translate(${coords.col*10}%,${coords.row*10}%)`;
-  }
-  document.getElementById('players-positions').textContent =
-    Object.entries(gameState.players).map(([k,v])=>`${v.name}: ${v.position}`).join(" | ");
-  document.getElementById('current-player-display').textContent = gameState.currentPlayer;
-}
-
-function rollDice(){
-  const roll=Math.floor(Math.random()*6)+1;
-  dice.textContent=roll;
-  movePlayer(gameState.currentPlayer, roll);
-}
-
-function movePlayer(p, roll){
-  let pos=gameState.players[p].position+roll;
-  if(pos>BOARD_SIZE) pos=gameState.players[p].position;
-  gameState.players[p].position=pos;
-  if(SPECIAL_SQUARES[pos]){
-    gameState.players[p].position=SPECIAL_SQUARES[pos].target;
-  }
-  if(gameState.players[p].position===BOARD_SIZE){
-    msg.textContent=`🎉 ${gameState.players[p].name} Wins!`;
-    return;
-  }
-  updateTokens();
-  nextTurn();
-}
-
-function nextTurn(){
-  const keys=Object.keys(gameState.players);
-  let i=keys.indexOf(gameState.currentPlayer);
-  gameState.currentPlayer=keys[(i+1)%keys.length];
-  updateTokens();
-  const cp=gameState.players[gameState.currentPlayer];
-  if(cp.isAI){
-    msg.textContent=`AI rolling...`;
-    setTimeout(()=>rollDice(),1000);
-  }else{
-    msg.textContent=`${cp.name}'s turn`;
-  }
-}
-
-// ----- MODES -----
-function startSinglePlayer(){
-  document.getElementById('mode-selection').style.display='none';
-  setupGame({RED:{position:1,name:"You",isAI:false},BLUE:{position:1,name:"AI",isAI:true}});
-}
-
-function setupGame(players){
-  gameState.players=players;
-  gameState.currentPlayer=Object.keys(players)[0];
-  document.getElementById('player-status').style.display='block';
-  document.getElementById('action-area').style.display='block';
-
-  for(const p in players){
-    const t=document.createElement('div');
-    t.className='token';
-    t.style.backgroundColor=p.toLowerCase();
-    t.textContent=p[0];
-    tokens[p]=t;
-  }
-  renderBoard();
-  updateTokens();
-
-  if(gameState.players[gameState.currentPlayer].isAI){
-    setTimeout(()=>rollDice(),1000);
-  }
-}
-
-function startMultiplayer(){
-  document.getElementById('mode-selection').style.display='none';
-  document.getElementById('online-room').style.display='block';
-}
-
-function createRoom(){
-  const code=Math.random().toString(36).substring(2,8).toUpperCase();
-  gameState={players:{RED:{position:1,name:"Host",isAI:false}},currentPlayer:"RED",roomCode:code,status:"ongoing"};
-  set(ref(db,'rooms/'+code),gameState);
-  document.getElementById('room-display').textContent=code;
-  loadRoom(code);
-}
-
-function joinRoom(){
-  const code=document.getElementById('room-code-input').value.toUpperCase();
-  if(!code)return;
-  loadRoom(code);
-}
-
-function loadRoom(code){
-  const r=ref(db,'rooms/'+code);
-  onValue(r,snap=>{
-    const data=snap.val();
-    if(!data)return;
-    gameState=data;
-    document.getElementById('online-room').style.display='none';
-    document.getElementById('player-status').style.display='block';
-    document.getElementById('action-area').style.display='block';
-    for(const p in gameState.players){
-      if(!tokens[p]){
-        const t=document.createElement('div');
-        t.className='token';
-        t.style.backgroundColor=p.toLowerCase();
-        t.textContent=p[0];
-        tokens[p]=t;
-      }
-    }
-    renderBoard();
-    updateTokens();
-  });
-}
-
-// attach button listeners
-document.getElementById('single-btn').addEventListener('click', startSinglePlayer);
-document.getElementById('multi-btn').addEventListener('click', startMultiplayer);
-document.getElementById('create-room-btn').addEventListener('click', createRoom);
-document.getElementById('join-room-btn').addEventListener('click', joinRoom);
-rollBtn.addEventListener('click', rollDice);
-</script>
+    <script>
+        function generateBarcode() {
+            const text = document.getElementById('textInput').value;
+            const container = document.getElementById('barcodeContainer');
+            const error = document.getElementById('error');
+            
+            error.classList.remove('active');
+            
+            if (!text || text.trim() === '') {
+                error.textContent = 'Please enter some text';
+                error.classList.add('active');
+                container.classList.remove('active');
+                return;
+            }
+            
+            try {
+                JsBarcode("#barcode", text, {
+                    format: "CODE128",
+                    width: 2,
+                    height: 25,
+                    displayValue: false,
+                    fontSize: 16,
+                    margin: 10
+                });
+                container.classList.add('active');
+            } catch (e) {
+                error.textContent = 'Invalid input for barcode generation';
+                error.classList.add('active');
+                container.classList.remove('active');
+            }
+        }
+        
+        // Generate initial barcode on load
+        window.onload = function() {
+            generateBarcode();
+        };
+        
+        // Allow Enter key to generate
+        document.getElementById('textInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateBarcode();
+            }
+        });
+        
+        function downloadBarcode() {
+            const svg = document.getElementById('barcode');
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+                
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'barcode.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                });
+            };
+            
+            img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+        }
+    </script>
 </body>
 </html>
